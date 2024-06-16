@@ -19,19 +19,16 @@ import com.kandclay.managers.*;
 public class MainAnimationScreen extends BaseScreen {
     private SkeletonRenderer renderer;
     private SpineAnimationHandler spineAnimationHandler;
-
     private Skeleton skeleton;
     private AnimationState state;
-
     private boolean isYellowCoin;
     private TextButton backButton;
     private Slider slider;
     private TextButton modeButton;
     private TextButton changeColorButton;
-
-    private boolean isLooping = true; // Set initial state to automatic (looping)
+    private boolean isLooping = true;
     private float speedMultiplier = 1f;
-    private float lastSliderValue = 0f; // Track last slider value for changes
+    private float lastSliderValue = 0f;
 
     public MainAnimationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -45,17 +42,11 @@ public class MainAnimationScreen extends BaseScreen {
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
 
-        // Load the coin color preference
         isYellowCoin = configManager.getPreference("coinColor", true);
-
-        initializeAnimations(0f);  // Start with the initial state time
-
-        // Set up the camera
-        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        initializeAnimations(0f);
 
         Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
 
-        // Initialize back button
         backButton = new TextButton("Back to Menu", skin, Constants.Font.BUTTON);
         backButton.addListener(new ChangeListener() {
             @Override
@@ -64,7 +55,6 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        // Initialize slider
         slider = new Slider(0, 1, 0.01f, false, skin);
         slider.addListener(new ChangeListener() {
             @Override
@@ -73,7 +63,6 @@ public class MainAnimationScreen extends BaseScreen {
                     float progress = slider.getValue();
                     float animationDuration = state.getCurrent(0).getAnimation().getDuration();
                     state.getCurrent(0).setTrackTime(progress * animationDuration);
-
                     if (progress != lastSliderValue) {
                         lastSliderValue = progress;
                         System.out.println("Slider changed: " + slider.getValue() + " Mode: Manual");
@@ -82,7 +71,6 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        // Initialize mode button
         modeButton = new TextButton("Switch to Manual Mode", skin, Constants.Font.BUTTON);
         modeButton.addListener(new ChangeListener() {
             @Override
@@ -91,14 +79,13 @@ public class MainAnimationScreen extends BaseScreen {
                 System.out.println("Mode changed to: " + (isLooping ? "Automatic" : "Manual"));
                 if (isLooping) {
                     modeButton.setText("Switch to Manual Mode");
-                    state.setAnimation(0, "animation", true);  // Restart the animation loop
+                    state.setAnimation(0, "animation", true);
                 } else {
                     modeButton.setText("Switch to Automatic Mode");
                 }
             }
         });
 
-        // Initialize change color button
         changeColorButton = new TextButton("Change Coin Color", skin, Constants.Font.BUTTON);
         changeColorButton.addListener(new ChangeListener() {
             @Override
@@ -107,7 +94,6 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        // Initialize speed control buttons
         TextButton speed1xButton = new TextButton("1x", skin, Constants.Font.BUTTON);
         speed1xButton.addListener(new ChangeListener() {
             @Override
@@ -135,7 +121,6 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        // Create control table for speed buttons
         Table controlTable = new Table();
         controlTable.top().left();
         controlTable.setFillParent(true);
@@ -143,7 +128,6 @@ public class MainAnimationScreen extends BaseScreen {
         controlTable.add(speed2xButton).size(Constants.Buttons.BUTTON_WIDTH, Constants.Buttons.BUTTON_HEIGHT).pad(Constants.Buttons.PADDING).row();
         controlTable.add(speed3xButton).size(Constants.Buttons.BUTTON_WIDTH, Constants.Buttons.BUTTON_HEIGHT).pad(Constants.Buttons.PADDING).row();
 
-        // Create table for slider and mode button
         Table bottomTable = new Table();
         bottomTable.setFillParent(true);
         bottomTable.bottom();
@@ -151,47 +135,41 @@ public class MainAnimationScreen extends BaseScreen {
         bottomTable.row();
         bottomTable.add(modeButton).padBottom(Constants.Buttons.PADDING);
 
-        // Create table for back button
         Table backButtonTable = new Table();
         backButtonTable.setFillParent(true);
         backButtonTable.bottom().left();
         backButtonTable.add(backButton).width(Constants.Buttons.BACK_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).pad(Constants.Buttons.PADDING);
 
-        // Create table for change color button
         Table topTable = new Table();
         topTable.setFillParent(true);
         topTable.top();
         topTable.add(changeColorButton).pad(Constants.Buttons.PADDING);
 
-        // Add all tables to the stage
         stage.addActor(controlTable);
         stage.addActor(bottomTable);
         stage.addActor(backButtonTable);
         stage.addActor(topTable);
+
+        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+        stage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
 
     private void toggleCoinColor() {
         float currentStateTime = state.getCurrent(0).getTrackTime();
         isYellowCoin = !isYellowCoin;
         configManager.setPreference("coinColor", isYellowCoin);
-        initializeAnimations(currentStateTime);  // Re-initialize the animations with the new coin color
+        initializeAnimations(currentStateTime);
     }
 
     private void initializeAnimations(float stateTime) {
         String atlasPath = isYellowCoin ? Constants.Coin.Yellow.ATLAS : Constants.Coin.Red.ATLAS;
         String skeletonPath = isYellowCoin ? Constants.Coin.Yellow.JSON : Constants.Coin.Red.JSON;
-
         skeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
         state = spineAnimationHandler.createAnimationState(skeleton);
         skeleton.setScale(1f, 1f);
-
         setSkeletonPosition();
-
-        state.setAnimation(0, "animation", true);  // Loop the animation by default
-
-        // Set the state time to resume from the same frame
+        state.setAnimation(0, "animation", true);
         state.getCurrent(0).setTrackTime(stateTime);
-
         state.addListener(new AnimationState.AnimationStateAdapter() {
             @Override
             public void start(AnimationState.TrackEntry entry) {
@@ -216,7 +194,7 @@ public class MainAnimationScreen extends BaseScreen {
         state.apply(skeleton);
         skeleton.updateWorldTransform();
 
-        camera.update();
+        viewport.apply();
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
@@ -233,15 +211,15 @@ public class MainAnimationScreen extends BaseScreen {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        camera.setToOrtho(false, width, height);
-        camera.update();
+        viewport.update(width, height, true);
+        stage.getViewport().update(width, height, true);
         setSkeletonPosition();
     }
 
     private void setSkeletonPosition() {
-        if (skeleton != null) { // Ensure skeleton is not null before setting position
-            float centerX = (camera.viewportWidth - skeleton.getData().getWidth()) / 2;
-            float centerY = (camera.viewportHeight - skeleton.getData().getHeight()) / 2;
+        if (skeleton != null) {
+            float centerX = viewport.getWorldWidth() / 2;
+            float centerY = viewport.getWorldHeight() / 2;
             skeleton.setPosition(centerX, centerY);
         }
     }

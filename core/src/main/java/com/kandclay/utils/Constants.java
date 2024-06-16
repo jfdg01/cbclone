@@ -36,7 +36,7 @@ public class Constants {
 
     public static class General {
         public static final int WIDTH = 800;
-        public static final int HEIGHT = 600;
+        public static final int HEIGHT = 800;
         public static final String TITLE = "K and Clay";
     }
 
