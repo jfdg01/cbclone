@@ -1,0 +1,41 @@
+
+menu.png
+size: 892,1018
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+leaves
+  rotate: true
+  xy: 2, 2
+  size: 1014, 501
+  orig: 1042, 522
+  offset: 17, 3
+  index: -1
+logo
+  rotate: true
+  xy: 505, 117
+  size: 899, 306
+  orig: 917, 323
+  offset: 9, 9
+  index: -1
+play
+  rotate: false
+  xy: 505, 38
+  size: 218, 77
+  orig: 218, 77
+  offset: 0, 0
+  index: -1
+quit
+  rotate: true
+  xy: 813, 352
+  size: 216, 77
+  orig: 216, 77
+  offset: 0, 0
+  index: -1
+settings
+  rotate: true
+  xy: 813, 570
+  size: 446, 76
+  orig: 446, 76
+  offset: 0, 0
+  index: -1

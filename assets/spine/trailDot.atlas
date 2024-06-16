@@ -1,0 +1,12 @@
+trailDot.png
+size: 96,105
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+heat
+  rotate: false
+  xy: 2, 2
+  size: 92, 101
+  orig: 96, 103
+  offset: 2, 1
+  index: -1

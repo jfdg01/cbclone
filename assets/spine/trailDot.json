@@ -1,0 +1,77 @@
+{
+  "skeleton": {
+    "hash": "g9wqFGxbpGw/y0ky73435k1TNbc",
+    "spine": "3.8.75",
+    "x": -49,
+    "y": -52,
+    "width": 96,
+    "height": 103,
+    "images": "../Spine/examples/windmill/images/",
+    "audio": "C:/Users/gara/Documents/Spine Proyects"
+  },
+  "bones": [
+    {
+      "name": "root"
+    }
+  ],
+  "slots": [
+    {
+      "name": "heat",
+      "bone": "root",
+      "attachment": "heat"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "heat": {
+          "heat": {
+            "x": -1,
+            "y": -0.5,
+            "width": 96,
+            "height": 103
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "animation": {
+      "slots": {
+        "heat": {
+          "color": [
+            {
+              "color": "ffffff00"
+            },
+            {
+              "time": 0.1333,
+              "color": "ffffffff"
+            },
+            {
+              "time": 0.5,
+              "color": "ffffff00"
+            }
+          ]
+        }
+      },
+      "bones": {
+        "root": {
+          "scale": [
+            {},
+            {
+              "time": 0.1333,
+              "x": 1.4,
+              "y": 1.4
+            },
+            {
+              "time": 0.5,
+              "x": 2,
+              "y": 2
+            }
+          ]
+        }
+      }
+    }
+  }
+}

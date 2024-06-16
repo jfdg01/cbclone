@@ -1,0 +1,1540 @@
+
+
+/** First screen of the application. Displayed after the application is created. */
+public class FirstScreen implements Screen {
+    @Override
+    public void show() {
+        // Prepare your screen here.
+    }
+
+    @Override
+    public void render(float delta) {
+        // Draw your screen here. "delta" is the time since last render in seconds.
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        // Resize your screen here. The parameters represent the new window size.
+    }
+
+    @Override
+    public void pause() {
+        // Invoked when your application is paused.
+    }
+
+    @Override
+    public void resume() {
+        // Invoked when your application is resumed after pause.
+    }
+
+    @Override
+    public void hide() {
+        // This method is called when another screen replaces this one.
+    }
+
+    @Override
+    public void dispose() {
+        // Destroy screen's assets here.
+    }
+}
+
+
+
+
+public class Main extends ApplicationAdapter {
+    private SpriteBatch batch;
+    private MyAssetManager assetManager;
+    private AudioManager audioManager;
+    private ConfigurationManager configManager;
+    private ScreenManager screenManager;
+    private SpriteSheetAnimationHandler spriteSheetAnimationHandler;
+    private SpineAnimationHandler spineAnimationHandler;
+
+    @Override
+    public void create() {
+        configManager = ConfigurationManager.getInstance();
+        assetManager = MyAssetManager.getInstance();
+        audioManager = AudioManager.getInstance();
+        screenManager = new ScreenManager();
+        spriteSheetAnimationHandler = new SpriteSheetAnimationHandler();
+        spineAnimationHandler = new SpineAnimationHandler();
+
+        loadInitialAssets();
+
+
+        screenManager.setScreen(ScreenType.MENU);
+    }
+
+    private void loadInitialAssets() {
+        assetManager.load(Constants.Skin.JSON, Skin.class);
+        assetManager.load(Constants.MainMenu.ATLAS, TextureAtlas.class);
+        assetManager.load(Constants.CursorTrail.ATLAS, TextureAtlas.class);
+        assetManager.load(Constants.Coin.Yellow.ATLAS, TextureAtlas.class);
+        assetManager.load(Constants.Coin.Red.ATLAS, TextureAtlas.class);
+        assetManager.load(Constants.Background.PATH, Texture.class);
+
+        assetManager.finishLoading();
+        addFontsToSkin();
+    }
+
+    private void addFontsToSkin() {
+        Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
+        BitmapFont customFont = generateFont(Constants.Font.PATH, 24);
+        skin.add(Constants.Font.FONT, customFont, BitmapFont.class);
+
+        Label.LabelStyle customLabelStyle = new Label.LabelStyle();
+        customLabelStyle.font = customFont;
+        skin.add(Constants.Font.LABEL, customLabelStyle);
+
+        // Add ButtonStyle
+        TextButton.TextButtonStyle customButtonStyle = new TextButton.TextButtonStyle();
+        customButtonStyle.font = customFont;
+        customButtonStyle.up = skin.getDrawable("default-rect");
+        customButtonStyle.down = skin.getDrawable("default-rect-down");
+        customButtonStyle.checked = skin.getDrawable("default-rect");
+        skin.add(Constants.Font.BUTTON, customButtonStyle);
+    }
+
+    private BitmapFont generateFont(String fontFile, int size) {
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(fontFile));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = size;
+        BitmapFont font = generator.generateFont(parameter);
+        generator.dispose(); // Dispose the generator to free up resources
+        return font;
+    }
+
+    @Override
+    public void render() {
+        screenManager.render(Gdx.graphics.getDeltaTime());
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        screenManager.resize(width, height);
+    }
+
+    @Override
+    public void pause() {
+        screenManager.pause();
+    }
+
+    @Override
+    public void resume() {
+        screenManager.resume();
+    }
+
+    @Override
+    public void dispose() {
+        if (screenManager != null) {
+            screenManager.dispose();
+        }
+        if (assetManager != null) {
+            assetManager.dispose();
+        }
+        if (audioManager != null) {
+            audioManager.dispose();
+        }
+        if (batch != null) {
+            batch.dispose();
+        }
+    }
+}
+
+
+
+public class AnimatedActor extends Actor {
+    private Animation<TextureRegion> animation;
+    private float stateTime;
+    private float targetX, targetY;
+
+    public AnimatedActor(Animation<TextureRegion> animation) {
+        this.animation = animation;
+        this.stateTime = 0f;
+        TextureRegion initialFrame = animation.getKeyFrame(0);
+        setBounds(getX(), getY(), initialFrame.getRegionWidth(), initialFrame.getRegionHeight());
+        setVisible(false); // Initially set to not visible
+    }
+
+    public void setAnimation(Animation<TextureRegion> newAnimation) {
+        this.animation = newAnimation;
+        this.stateTime = 0f;
+        TextureRegion initialFrame = newAnimation.getKeyFrame(0);
+        setBounds(getX(), getY(), initialFrame.getRegionWidth(), initialFrame.getRegionHeight());
+    }
+
+    public void setTargetPosition(float x, float y) {
+        this.targetX = x;
+        this.targetY = y;
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        stateTime += delta;
+
+        // Interpolate to target position
+        float newX = getX() + (targetX - getX()) * Constants.Game.LERP_FACTOR;
+        float newY = getY() + (targetY - getY()) * Constants.Game.LERP_FACTOR;
+        setPosition(newX, newY);
+    }
+
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        if (!isVisible()) return; // Only draw if visible
+        super.draw(batch, parentAlpha);
+        TextureRegion currentFrame = animation.getKeyFrame(stateTime, true);
+        batch.draw(currentFrame, getX(), getY(), getWidth(), getHeight());
+    }
+}
+
+
+
+public class BaseActor extends Actor {
+    private TextureRegion textureRegion;
+
+    public BaseActor(Texture texture) {
+        this.textureRegion = new TextureRegion(texture);
+        setBounds(getX(), getY(), textureRegion.getRegionWidth(), textureRegion.getRegionHeight());
+    }
+
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        super.draw(batch, parentAlpha);
+        batch.setColor(getColor().r, getColor().g, getColor().b, getColor().a * parentAlpha);
+        if (isVisible()) {
+            batch.draw(textureRegion, getX(), getY(), getOriginX(), getOriginY(), getWidth(), getHeight(),
+                getScaleX(), getScaleY(), getRotation());
+        }
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        // Any additional behavior for BaseActor can be added here
+    }
+
+    @Override
+    protected void positionChanged() {
+        super.positionChanged();
+        // Update bounds or any other properties dependent on position
+    }
+
+    @Override
+    protected void sizeChanged() {
+        super.sizeChanged();
+        // Update bounds or any other properties dependent on size
+    }
+
+    public void dispose() {
+        if (textureRegion.getTexture() != null) {
+            textureRegion.getTexture().dispose();
+        }
+    }
+}
+
+
+public class SpineAnimatedActor extends Actor {
+    private Skeleton skeleton;
+    private AnimationState state;
+    private SkeletonRenderer renderer;
+
+    public SpineAnimatedActor(Skeleton skeleton, AnimationState state) {
+        this.skeleton = skeleton;
+        this.state = state;
+        this.renderer = new SkeletonRenderer();
+        this.renderer.setPremultipliedAlpha(true);
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        state.update(delta);
+        state.apply(skeleton);
+        skeleton.updateWorldTransform();
+    }
+
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        super.draw(batch, parentAlpha);
+        batch.setColor(getColor().r, getColor().g, getColor().b, getColor().a * parentAlpha);
+        renderer.draw(batch, skeleton);
+    }
+
+    public void setSkeletonPosition(float x, float y) {
+        skeleton.setPosition(x, y);
+    }
+
+    public void setAnimation(String animationName, boolean loop) {
+        state.setAnimation(0, animationName, loop);
+    }
+
+    public Skeleton getSkeleton() {
+        return skeleton;
+    }
+
+    public void setSkeleton(Skeleton skeleton) {
+        this.skeleton = skeleton;
+    }
+
+    public AnimationState getAnimationState() {
+        return state;
+    }
+
+    public void setAnimationState(AnimationState state) {
+        this.state = state;
+    }
+
+    public SkeletonRenderer getRenderer() {
+        return renderer;
+    }
+
+    public void setRenderer(SkeletonRenderer renderer) {
+        this.renderer = renderer;
+    }
+}
+
+
+
+public class InputHandler extends InputAdapter {
+
+    @Override
+    public boolean keyDown(int keycode) {
+        // Handle key press event
+        switch (keycode) {
+            case Input.Keys.UP:
+                // Handle up key
+                break;
+            case Input.Keys.DOWN:
+                // Handle down key
+                break;
+            case Input.Keys.LEFT:
+                // Handle left key
+                break;
+            case Input.Keys.RIGHT:
+                // Handle right key
+                break;
+            case Input.Keys.ESCAPE:
+                // Handle escape key
+                break;
+            default:
+                break;
+        }
+        return true; // Return true to indicate the event was handled
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        // Handle key release event
+        return true;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        // Handle character typed event
+        return true;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        // Handle touch down event
+        return true;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        // Handle touch up event
+        return true;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        // Handle touch dragged event
+        return true;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        // Handle mouse moved event
+        return true;
+    }
+
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
+        // Handle scrolling event
+        return true;
+    }
+}
+
+
+
+public class SpineAnimationHandler {
+    private MyAssetManager assetManager;
+
+    public SpineAnimationHandler() {
+        this.assetManager = MyAssetManager.getInstance();
+    }
+
+    public Skeleton createSkeleton(String atlasPath, String skeletonPath) {
+        TextureAtlas atlas = assetManager.get(atlasPath, TextureAtlas.class);
+        SkeletonJson json = new SkeletonJson(atlas);
+        SkeletonData skeletonData = json.readSkeletonData(Gdx.files.internal(skeletonPath));
+        return new Skeleton(skeletonData);
+    }
+
+    public AnimationState createAnimationState(Skeleton skeleton) {
+        AnimationStateData stateData = new AnimationStateData(skeleton.getData());
+        return new AnimationState(stateData);
+    }
+}
+
+
+
+
+public class SpriteSheetAnimationHandler {
+    private MyAssetManager assetManager;
+
+    public SpriteSheetAnimationHandler() {
+        this.assetManager = MyAssetManager.getInstance();
+    }
+
+    public Animation<TextureRegion> createAnimationFromAssetManager(String regionName) {
+        String name = "sprites/anim/" + regionName + ".png";
+        Texture texture = assetManager.get(name, Texture.class);
+
+        int frameWidth = texture.getWidth() / Constants.Animation.NUM_COLS;
+        int frameHeight = texture.getHeight() / Constants.Animation.NUM_ROWS;
+
+        TextureRegion[][] tmpFrames = TextureRegion.split(texture, frameWidth, frameHeight);
+        TextureRegion[] animationFrames = new TextureRegion[Constants.Animation.NUM_ROWS * Constants.Animation.NUM_COLS];
+
+        int index = 0;
+        for (int i = 0; i < Constants.Animation.NUM_ROWS; i++) {
+            for (int j = 0; j < Constants.Animation.NUM_COLS; j++) {
+                animationFrames[index++] = tmpFrames[i][j];
+            }
+        }
+
+        return new Animation<TextureRegion>(Constants.Animation.FRAME_DURATION, animationFrames);
+    }
+
+    // Additional helper method to handle animations created by hand
+    public Animation<TextureRegion> createAnimationFromCustomFrames(TextureRegion[] frames, float frameDuration) {
+        return new Animation<TextureRegion>(frameDuration, frames);
+    }
+}
+
+
+
+
+public class AudioManager implements Disposable {
+    private static AudioManager instance;
+
+    private Map<String, Sound> soundMap;
+    private Map<String, Music> musicMap;
+    private Music currentMusic;
+
+    private float volume;
+
+    // Private constructor to prevent instantiation
+    private AudioManager() {
+        soundMap = new HashMap<>();
+        musicMap = new HashMap<>();
+        volume = Constants.Audio.DEFAULT_VOLUME; // Default volume
+    }
+
+    // Thread-safe method to get the singleton instance
+    public static synchronized AudioManager getInstance() {
+        if (instance == null) {
+            instance = new AudioManager();
+        }
+        return instance;
+    }
+
+    // Load a sound file
+    public void loadSound(String fileName) {
+        if (!soundMap.containsKey(fileName)) {
+            Sound sound = Gdx.audio.newSound(Gdx.files.internal(fileName));
+            soundMap.put(fileName, sound);
+        }
+    }
+
+    // Play a sound file
+    public void playSound(String fileName) {
+        Sound sound = soundMap.get(fileName);
+        if (sound != null) {
+            sound.play(volume);
+        } else {
+            throw new RuntimeException("Sound not loaded: " + fileName);
+        }
+    }
+
+    // Stop a sound file
+    public void stopSound(String fileName) {
+        Sound sound = soundMap.get(fileName);
+        if (sound != null) {
+            sound.stop();
+        } else {
+            throw new RuntimeException("Sound not loaded: " + fileName);
+        }
+    }
+
+    // Load a music file
+    public void loadMusic(String fileName) {
+        if (!musicMap.containsKey(fileName)) {
+            Music music = Gdx.audio.newMusic(Gdx.files.internal(fileName));
+            musicMap.put(fileName, music);
+        }
+    }
+
+    // Play a music file
+    public void playMusic(String fileName, boolean looping) {
+        if (currentMusic != null) {
+            currentMusic.stop();
+        }
+        Music music = musicMap.get(fileName);
+        if (music != null) {
+            music.setLooping(looping);
+            music.setVolume(volume);
+            music.play();
+            currentMusic = music;
+        } else {
+            throw new RuntimeException("Music not loaded: " + fileName);
+        }
+    }
+
+    // Stop the current music
+    public void stopMusic() {
+        if (currentMusic != null) {
+            currentMusic.stop();
+            currentMusic = null;
+        }
+    }
+
+    // Set volume for sound effects and current music
+    public void setVolume(float volume) {
+        this.volume = volume;
+        if (currentMusic != null) {
+            currentMusic.setVolume(volume);
+        }
+    }
+
+    // Get volume for sound effects
+    public float getVolume() {
+        return volume;
+    }
+
+    // Dispose of all sounds and music
+    @Override
+    public void dispose() {
+        for (Sound sound : soundMap.values()) {
+            sound.dispose();
+        }
+        soundMap.clear();
+
+        for (Music music : musicMap.values()) {
+            music.dispose();
+        }
+        musicMap.clear();
+
+        if (currentMusic != null) {
+            currentMusic.dispose();
+            currentMusic = null;
+        }
+    }
+}
+
+
+public class ConfigurationManager {
+    private static ConfigurationManager instance;
+    private Preferences preferences;
+
+    // Private constructor to prevent instantiation
+    private ConfigurationManager() {
+        preferences = Gdx.app.getPreferences("config");
+    }
+
+    // Thread-safe method to get the singleton instance
+    public static synchronized ConfigurationManager getInstance() {
+        if (instance == null) {
+            instance = new ConfigurationManager();
+        }
+        return instance;
+    }
+
+    // Method to get a preference value with a default
+    public String getPreference(String key, String defaultValue) {
+        return preferences.getString(key, defaultValue);
+    }
+
+    public int getPreference(String key, int defaultValue) {
+        return preferences.getInteger(key, defaultValue);
+    }
+
+    public boolean getPreference(String key, boolean defaultValue) {
+        return preferences.getBoolean(key, defaultValue);
+    }
+
+    public float getPreference(String key, float defaultValue) {
+        return preferences.getFloat(key, defaultValue);
+    }
+
+    public void setPreference(String key, String value) {
+        preferences.putString(key, value);
+        preferences.flush();  // Ensure changes are saved
+    }
+
+    public void setPreference(String key, int value) {
+        preferences.putInteger(key, value);
+        preferences.flush();  // Ensure changes are saved
+    }
+
+    public void setPreference(String key, boolean value) {
+        preferences.putBoolean(key, value);
+        preferences.flush();  // Ensure changes are saved
+    }
+
+    public void setPreference(String key, float value) {
+        preferences.putFloat(key, value);
+        preferences.flush();  // Ensure changes are saved
+    }
+
+    // Method to check if a preference exists
+    public boolean hasPreference(String key) {
+        return preferences.contains(key);
+    }
+
+    // Method to remove a preference
+    public void removePreference(String key) {
+        preferences.remove(key);
+        preferences.flush();  // Ensure changes are saved
+    }
+
+    // Method to clear all preferences
+    public void clearPreferences() {
+        preferences.clear();
+        preferences.flush();  // Ensure changes are saved
+    }
+
+    // Method to handle errors in preferences management
+    public void handlePreferenceError(String key, Exception e) {
+        System.err.println("Error accessing preference: " + key);
+        e.printStackTrace();
+    }
+}
+
+
+
+public class MyAssetManager implements Disposable {
+    private static MyAssetManager instance;
+    private AssetManager assetManager;
+
+    // Private constructor to prevent instantiation
+    private MyAssetManager() {
+        assetManager = new AssetManager();
+    }
+
+    // Thread-safe method to get the singleton instance
+    public static synchronized MyAssetManager getInstance() {
+        if (instance == null) {
+            instance = new MyAssetManager();
+        }
+        return instance;
+    }
+
+    // Load an asset with the given file name and type
+    public synchronized void load(String asset, Class<?> type) {
+        if (!assetManager.isLoaded(asset)) {
+            assetManager.load(asset, type);
+        }
+    }
+
+    // Get a loaded asset
+    public synchronized <T> T get(String asset, Class<T> type) {
+        if (assetManager.isLoaded(asset)) {
+            return assetManager.get(asset, type);
+        } else {
+            throw new RuntimeException("Asset not loaded: " + asset);
+        }
+    }
+
+    // Finish loading all assets
+    public void finishLoading() {
+        assetManager.finishLoading();
+    }
+
+    // Check if all assets are loaded
+    public boolean update() {
+        return assetManager.update();
+    }
+
+    // Get the progress of asset loading (between 0 and 1)
+    public float getProgress() {
+        return assetManager.getProgress();
+    }
+
+    // Dispose of the asset manager and all its assets
+    @Override
+    public void dispose() {
+        assetManager.dispose();
+    }
+}
+
+
+public class ScreenManager {
+    private MyAssetManager assetManager;
+    private AudioManager audioManager;
+    private ConfigurationManager configManager;
+    private BaseScreen currentScreen;
+    private SpriteSheetAnimationHandler spriteSheetAnimationHandler;
+    private SpineAnimationHandler spineAnimationHandler;
+
+    public ScreenManager() {
+        this.assetManager = MyAssetManager.getInstance();
+        this.audioManager = AudioManager.getInstance();
+        this.configManager = ConfigurationManager.getInstance();
+        this.spriteSheetAnimationHandler = new SpriteSheetAnimationHandler();
+        this.spineAnimationHandler = new SpineAnimationHandler();
+    }
+
+    public void setScreen(ScreenType screenType) {
+        if (currentScreen != null) {
+            currentScreen.dispose();
+        }
+        switch (screenType) {
+            case MENU:
+                currentScreen = new MainMenuScreen(spineAnimationHandler, this);
+                break;
+            case GAME:
+                currentScreen = new MainAnimationScreen(spineAnimationHandler, this);
+                break;
+            case OPTIONS:
+                currentScreen = new ConfigurationScreen(spineAnimationHandler, this);
+                break;
+        }
+        currentScreen.show();
+    }
+
+    public void render(float delta) {
+        if (currentScreen != null) {
+            currentScreen.render(delta);
+        }
+    }
+
+    public void resize(int width, int height) {
+        if (currentScreen != null) {
+            currentScreen.resize(width, height);
+        }
+    }
+
+    public void pause() {
+        if (currentScreen != null) {
+            currentScreen.pause();
+        }
+    }
+
+    public void resume() {
+        if (currentScreen != null) {
+            currentScreen.resume();
+        }
+    }
+
+    public void dispose() {
+        if (currentScreen != null) {
+            currentScreen.dispose();
+        }
+    }
+}
+
+
+
+
+public abstract class BaseScreen implements Screen {
+    protected Stage stage;
+    protected MyAssetManager assetManager;
+    protected AudioManager audioManager;
+    protected SpineAnimationHandler spineAnimationHandler;
+    protected ConfigurationManager configManager;
+    protected ScreenManager screenManager;
+    private SnapshotArray<TrailDot> trailDots;
+    private int trailDotCount = 0;
+    protected SpriteBatch batch;
+
+    public BaseScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
+        this.assetManager = MyAssetManager.getInstance();
+        this.audioManager = AudioManager.getInstance();
+        this.configManager = ConfigurationManager.getInstance();
+        this.spineAnimationHandler = spineAnimationHandler;
+        this.screenManager = screenManager;
+        this.stage = new Stage(new ScreenViewport());
+        this.trailDots = new SnapshotArray<>();
+        this.batch = new SpriteBatch();
+        Gdx.input.setInputProcessor(stage);
+
+        stage.addListener(new InputListener() {
+            @Override
+            public boolean mouseMoved(InputEvent event, float x, float y) {
+                createTrailDot(x, y);
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public void show() {
+        Gdx.input.setInputProcessor(stage);
+    }
+
+    public void clearScreen() {
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+    }
+
+    @Override
+    public void render(float delta) {
+        clearScreen();
+    }
+
+    void renderTrail(float delta) {
+        Iterator<TrailDot> iterator = trailDots.iterator();
+        while (iterator.hasNext()) {
+            TrailDot trailDot = iterator.next();
+            trailDot.state.update(delta);
+            trailDot.state.apply(trailDot.skeleton);
+            trailDot.skeleton.updateWorldTransform();
+            trailDot.skeleton.setPosition(trailDot.x, trailDot.y);
+
+            trailDot.renderer.draw(batch, trailDot.skeleton);
+
+            if (trailDot.state.getCurrent(0) == null || trailDot.state.getCurrent(0).isComplete()) {
+                iterator.remove();
+            }
+        }
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
+    }
+
+    @Override
+    public void pause() {
+        // Override in subclasses if needed
+    }
+
+    @Override
+    public void resume() {
+        // Override in subclasses if needed
+    }
+
+    @Override
+    public void hide() {
+        // Override in subclasses to hide the screen
+    }
+
+    @Override
+    public void dispose() {
+        stage.dispose();
+        if (batch != null) {
+            batch.dispose();
+        }
+    }
+
+    private void createTrailDot(float x, float y) {
+        float hue = (trailDotCount % Constants.TrailDot.NUMBER_OF_COLORS);
+
+        Color currentColor = new Color();
+        currentColor.fromHsv(hue, Constants.TrailDot.SATURATION, Constants.TrailDot.VALUE);
+        currentColor.a = Constants.TrailDot.ALPHA;
+
+        String trailAtlasPath = Constants.CursorTrail.ATLAS;
+        String trailSkeletonPath = Constants.CursorTrail.JSON;
+
+        Skeleton trailSkeleton = spineAnimationHandler.createSkeleton(trailAtlasPath, trailSkeletonPath);
+        AnimationState trailState = spineAnimationHandler.createAnimationState(trailSkeleton);
+        SkeletonRenderer trailRenderer = new SkeletonRenderer();
+        trailRenderer.setPremultipliedAlpha(true);
+
+        float randomScale = MathUtils.random(Constants.TrailDot.MIN_SCALE, Constants.TrailDot.MAX_SCALE);
+        float randomRotation = MathUtils.random(Constants.TrailDot.MIN_ROTATION, Constants.TrailDot.MAX_ROTATION);
+
+        trailSkeleton.setPosition(x, y);
+        trailSkeleton.setColor(currentColor);
+        trailSkeleton.setScale(randomScale, randomScale);
+        trailSkeleton.getRootBone().setRotation(randomRotation);
+
+        trailState.setAnimation(0, "animation", false);
+
+        trailDots.add(new TrailDot(trailSkeleton, trailState, trailRenderer, x, y));
+        trailDotCount++;
+    }
+
+    private static class TrailDot {
+        public Skeleton skeleton;
+        public AnimationState state;
+        public SkeletonRenderer renderer;
+        public float x, y;
+
+        public TrailDot(Skeleton skeleton, AnimationState state, SkeletonRenderer renderer, float x, float y) {
+            this.skeleton = skeleton;
+            this.state = state;
+            this.renderer = renderer;
+            this.x = x;
+            this.y = y;
+        }
+    }
+}
+
+
+
+public class ConfigurationScreen extends BaseScreen {
+    private Slider volumeSlider;
+    private TextButton backButton;
+    private TextButton hairColorButton;
+    private TextButton heightButton;
+    private TextButton coinColorButton;
+
+    private Constants.HairColor currentHairColor;
+    private Constants.Height currentHeight;
+    private boolean isYellowCoin;
+
+    public ConfigurationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
+        super(spineAnimationHandler, screenManager);
+        this.screenManager = screenManager;
+    }
+
+    @Override
+    public void show() {
+        super.show();
+
+        Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
+
+        // Load preferences
+        float savedVolume = configManager.getPreference("volume", Constants.Audio.DEFAULT_VOLUME);
+        String savedHairColor = configManager.getPreference("hairColor", Constants.HairColor.BLONDE.toString());
+        String savedHeight = configManager.getPreference("height", Constants.Height.AVERAGE.toString());
+        isYellowCoin = configManager.getPreference("coinColor", true); // Default to yellow coin
+
+        currentHairColor = Constants.HairColor.valueOf(savedHairColor);
+        currentHeight = Constants.Height.valueOf(savedHeight);
+
+        // Create a slider for volume control
+        volumeSlider = new Slider(0, 1, 0.01f, false, skin);
+        volumeSlider.setValue(savedVolume);
+        volumeSlider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                float volume = volumeSlider.getValue();
+                audioManager.setVolume(volume);
+                configManager.setPreference("volume", volume); // Save volume preference
+            }
+        });
+
+        // Create a back button with the new font style
+        backButton = new TextButton("Back", skin, Constants.Font.BUTTON);
+        backButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                screenManager.setScreen(Constants.ScreenType.MENU);
+            }
+        });
+
+        // Create other buttons with the new font style
+        hairColorButton = new TextButton("Hair Color: " + currentHairColor, skin,  Constants.Font.BUTTON);
+        hairColorButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                currentHairColor = currentHairColor.next();
+                hairColorButton.setText("Hair Color: " + currentHairColor);
+                configManager.setPreference("hairColor", currentHairColor.toString()); // Save hair color preference
+            }
+        });
+
+        heightButton = new TextButton("Height: " + currentHeight, skin,  Constants.Font.BUTTON);
+        heightButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                currentHeight = currentHeight.next();
+                heightButton.setText("Height: " + currentHeight);
+                configManager.setPreference("height", currentHeight.toString()); // Save height preference
+            }
+        });
+
+        coinColorButton = new TextButton("Coin Color: " + (isYellowCoin ? "Yellow" : "Red"), skin,  Constants.Font.BUTTON);
+        coinColorButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                isYellowCoin = !isYellowCoin;
+                coinColorButton.setText("Coin Color: " + (isYellowCoin ? "Yellow" : "Red"));
+                configManager.setPreference("coinColor", isYellowCoin); // Save coin color preference
+            }
+        });
+
+        // Arrange the UI elements in a table
+        Table table = new Table();
+        table.setFillParent(true);
+        table.center();
+        table.add(new Label("Options", skin, Constants.Font.LABEL)).padBottom(Constants.Buttons.PADDING).row();
+        table.add(new Label("Volume", skin, Constants.Font.LABEL)).padBottom(Constants.Buttons.PADDING).row();
+        table.add(volumeSlider).width(Constants.Buttons.SLIDER_WIDTH).padBottom(Constants.Buttons.PADDING).row();
+        table.add(hairColorButton).width(Constants.Buttons.CONTROL_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.Buttons.PADDING).row();
+        table.add(heightButton).width(Constants.Buttons.CONTROL_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.Buttons.PADDING).row();
+        table.add(coinColorButton).width(Constants.Buttons.CONTROL_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.Buttons.PADDING).row();
+        table.add(backButton).width(Constants.Buttons.BACK_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padTop(Constants.Buttons.PADDING);
+
+        stage.addActor(table);
+    }
+
+    @Override
+    public void render(float delta) {
+        super.render(delta);
+
+        batch.begin();
+        // Draw the stage which includes UI elements
+        stage.act(delta);
+        stage.draw();
+        // Draw the trail dots
+        renderTrail(delta);
+        batch.end();
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
+}
+
+
+
+
+public class MainAnimationScreen extends BaseScreen {
+    private OrthographicCamera camera;
+    private SkeletonRenderer renderer;
+    private SpineAnimationHandler spineAnimationHandler;
+
+    private Skeleton skeleton;
+    private AnimationState state;
+
+    private boolean isYellowCoin;
+    private TextButton backButton;
+    private Slider slider;
+    private TextButton modeButton;
+    private TextButton changeColorButton;
+
+    private boolean isLooping = true; // Set initial state to automatic (looping)
+    private float speedMultiplier = 1f;
+    private float lastSliderValue = 0f; // Track last slider value for changes
+
+    public MainAnimationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
+        super(spineAnimationHandler, screenManager);
+        this.spineAnimationHandler = spineAnimationHandler;
+    }
+
+    @Override
+    public void show() {
+        super.show();
+
+        camera = new OrthographicCamera();
+        renderer = new SkeletonRenderer();
+        renderer.setPremultipliedAlpha(true);
+
+        // Load the coin color preference
+        isYellowCoin = configManager.getPreference("coinColor", true);
+
+        initializeAnimations(0f);  // Start with the initial state time
+
+        // Set up the camera
+        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
+        Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
+
+        // Initialize back button
+        backButton = new TextButton("Back to Menu", skin,  Constants.Font.BUTTON);
+        backButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                screenManager.setScreen(Constants.ScreenType.MENU);
+            }
+        });
+
+        // Initialize slider
+        slider = new Slider(0, 1, 0.01f, false, skin);
+        slider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!isLooping) {
+                    float progress = slider.getValue();
+                    float animationDuration = state.getCurrent(0).getAnimation().getDuration();
+                    state.getCurrent(0).setTrackTime(progress * animationDuration);
+
+                    if (progress != lastSliderValue) {
+                        lastSliderValue = progress;
+                        System.out.println("Slider changed: " + slider.getValue() + " Mode: Manual");
+                    }
+                }
+            }
+        });
+
+        // Initialize mode button
+        modeButton = new TextButton("Switch to Manual Mode", skin,  Constants.Font.BUTTON);
+        modeButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                isLooping = !isLooping;
+                System.out.println("Mode changed to: " + (isLooping ? "Automatic" : "Manual"));
+                if (isLooping) {
+                    modeButton.setText("Switch to Manual Mode");
+                    state.setAnimation(0, "animation", true);  // Restart the animation loop
+                } else {
+                    modeButton.setText("Switch to Automatic Mode");
+                }
+            }
+        });
+
+        // Initialize change color button
+        changeColorButton = new TextButton("Change Coin Color", skin,  Constants.Font.BUTTON);
+        changeColorButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                toggleCoinColor();
+            }
+        });
+
+        // Initialize speed control buttons
+        TextButton speed1xButton = new TextButton("1x", skin,  Constants.Font.BUTTON);
+        speed1xButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                speedMultiplier = 1f;
+                System.out.println("Speed set to 1x");
+            }
+        });
+
+        TextButton speed2xButton = new TextButton("2x", skin,  Constants.Font.BUTTON);
+        speed2xButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                speedMultiplier = 2f;
+                System.out.println("Speed set to 2x");
+            }
+        });
+
+        TextButton speed3xButton = new TextButton("3x", skin,  Constants.Font.BUTTON);
+        speed3xButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                speedMultiplier = 3f;
+                System.out.println("Speed set to 3x");
+            }
+        });
+
+        // Create control table for speed buttons
+        Table controlTable = new Table();
+        controlTable.top().left();
+        controlTable.setFillParent(true);
+        controlTable.add(speed1xButton).size(Constants.Buttons.BUTTON_WIDTH, Constants.Buttons.BUTTON_HEIGHT).pad(Constants.Buttons.PADDING).row();
+        controlTable.add(speed2xButton).size(Constants.Buttons.BUTTON_WIDTH, Constants.Buttons.BUTTON_HEIGHT).pad(Constants.Buttons.PADDING).row();
+        controlTable.add(speed3xButton).size(Constants.Buttons.BUTTON_WIDTH, Constants.Buttons.BUTTON_HEIGHT).pad(Constants.Buttons.PADDING).row();
+
+        // Create table for slider and mode button
+        Table bottomTable = new Table();
+        bottomTable.setFillParent(true);
+        bottomTable.bottom();
+        bottomTable.add(slider).width(Constants.Buttons.SLIDER_WIDTH).padBottom(Constants.Buttons.PADDING);
+        bottomTable.row();
+        bottomTable.add(modeButton).padBottom(Constants.Buttons.PADDING);
+
+        // Create table for back button
+        Table backButtonTable = new Table();
+        backButtonTable.setFillParent(true);
+        backButtonTable.bottom().left();
+        backButtonTable.add(backButton).width(Constants.Buttons.BACK_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).pad(Constants.Buttons.PADDING);
+
+        // Create table for change color button
+        Table topTable = new Table();
+        topTable.setFillParent(true);
+        topTable.top();
+        topTable.add(changeColorButton).pad(Constants.Buttons.PADDING);
+
+        // Add all tables to the stage
+        stage.addActor(controlTable);
+        stage.addActor(bottomTable);
+        stage.addActor(backButtonTable);
+        stage.addActor(topTable);
+    }
+
+    private void toggleCoinColor() {
+        float currentStateTime = state.getCurrent(0).getTrackTime();
+        isYellowCoin = !isYellowCoin;
+        configManager.setPreference("coinColor", isYellowCoin);
+        initializeAnimations(currentStateTime);  // Re-initialize the animations with the new coin color
+    }
+
+    private void initializeAnimations(float stateTime) {
+        String atlasPath = isYellowCoin ? Constants.Coin.Yellow.ATLAS : Constants.Coin.Red.ATLAS;
+        String skeletonPath = isYellowCoin ? Constants.Coin.Yellow.JSON : Constants.Coin.Red.JSON;
+
+        skeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
+        state = spineAnimationHandler.createAnimationState(skeleton);
+        skeleton.setScale(1f, 1f);
+
+        setSkeletonPosition();
+
+        state.setAnimation(0, "animation", true);  // Loop the animation by default
+
+        // Set the state time to resume from the same frame
+        state.getCurrent(0).setTrackTime(stateTime);
+
+        state.addListener(new AnimationState.AnimationStateAdapter() {
+            @Override
+            public void start(AnimationState.TrackEntry entry) {
+                System.out.println("Animation started");
+            }
+
+            @Override
+            public void complete(AnimationState.TrackEntry entry) {
+                System.out.println("Animation completed");
+            }
+        });
+    }
+
+    @Override
+    public void render(float delta) {
+        super.render(delta);
+
+        if (isLooping) {
+            state.update(delta * speedMultiplier);
+        }
+
+        state.apply(skeleton);
+        skeleton.updateWorldTransform();
+
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
+
+        batch.begin();
+        // Draw the animations
+        renderer.draw(batch, skeleton);
+        // Draw the UI
+        stage.act(delta);
+        stage.draw();
+        // Draw the trail
+        super.renderTrail(delta);
+        batch.end();
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        camera.setToOrtho(false, width, height);
+        camera.update();
+        setSkeletonPosition();
+    }
+
+    private void setSkeletonPosition() {
+        // Center the skeleton on the screen
+        float centerX = (camera.viewportWidth - skeleton.getData().getWidth()) / 2;
+        float centerY = (camera.viewportHeight - skeleton.getData().getHeight()) / 2;
+        skeleton.setPosition(centerX, centerY);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
+}
+
+
+public class MainMenuScreen extends BaseScreen {
+
+    private OrthographicCamera camera;
+    private SkeletonRenderer renderer;
+    private Skeleton skeleton;
+    private AnimationState state;
+    private BitmapFont font;
+    private float speedMultiplier = 1f;
+    private boolean isPlayHovered = false;
+    private boolean isQuitHovered = false;
+    private boolean isSettingsHovered = false;
+    private Texture backgroundTexture;
+
+    public MainMenuScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
+        super(spineAnimationHandler, screenManager);
+    }
+
+    @Override
+    public void show() {
+        super.show();
+
+        camera = new OrthographicCamera();
+        renderer = new SkeletonRenderer();
+        renderer.setPremultipliedAlpha(true);
+
+        initializeAnimations();
+
+        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        font = new BitmapFont();
+
+        // Load the background texture
+        backgroundTexture = assetManager.get("background.jpg", Texture.class);
+
+        stage.addListener(new InputListener() {
+            @Override
+            public boolean mouseMoved(InputEvent event, float x, float y) {
+                handleHover(x, y);
+                return true;
+            }
+
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                handleClick(x, y);
+                return true;
+            }
+        });
+    }
+
+    private void initializeAnimations() {
+        String atlasPath = Constants.MainMenu.ATLAS;
+        String skeletonPath = Constants.MainMenu.JSON;
+
+        skeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
+        state = spineAnimationHandler.createAnimationState(skeleton);
+        skeleton.setScale(1f, 1f);
+
+        setSkeletonPosition();
+        state.setAnimation(0, "animation", false);
+    }
+
+    private void handleHover(float x, float y) {
+        Vector2 stageCoords = stage.screenToStageCoordinates(new Vector2(x, y));
+
+        if (isHoveringButton(stageCoords.x, stageCoords.y, "play")) {
+            if (!isPlayHovered) {
+                state.setAnimation(1, "Buttons/PlayHoverIn", false);
+                isPlayHovered = true;
+            }
+        } else {
+            if (isPlayHovered) {
+                state.setAnimation(1, "Buttons/PlayHoverOut", false);
+                isPlayHovered = false;
+            }
+        }
+
+        if (isHoveringButton(stageCoords.x, stageCoords.y, "quit")) {
+            if (!isQuitHovered) {
+                state.setAnimation(2, "Buttons/QuitHoverIn", false);
+                isQuitHovered = true;
+            }
+        } else {
+            if (isQuitHovered) {
+                state.setAnimation(2, "Buttons/QuitHoverOut", false);
+                isQuitHovered = false;
+            }
+        }
+
+        if (isHoveringButton(stageCoords.x, stageCoords.y, "settings")) {
+            if (!isSettingsHovered) {
+                state.setAnimation(3, "Buttons/SettingsHoverIn", false);
+                isSettingsHovered = true;
+            }
+        } else {
+            if (isSettingsHovered) {
+                state.setAnimation(3, "Buttons/SettingsHoverOut", false);
+                isSettingsHovered = false;
+            }
+        }
+    }
+
+    private void handleClick(float x, float y) {
+        Vector2 stageCoords = stage.screenToStageCoordinates(new Vector2(x, y));
+
+        if (isHoveringButton(stageCoords.x, stageCoords.y, "play")) {
+            screenManager.setScreen(Constants.ScreenType.GAME);
+        } else if (isHoveringButton(stageCoords.x, stageCoords.y, "quit")) {
+            Gdx.app.exit();
+        } else if (isHoveringButton(stageCoords.x, stageCoords.y, "settings")) {
+            screenManager.setScreen(Constants.ScreenType.OPTIONS);
+        }
+    }
+
+    private boolean isHoveringButton(float x, float y, String buttonName) {
+        Rectangle buttonBounds = getButtonBounds(buttonName);
+        return buttonBounds.contains(x, y);
+    }
+
+    private Rectangle getButtonBounds(String buttonName) {
+        Bone bone = skeleton.findBone(buttonName);
+        if (bone == null) return new Rectangle();
+
+        RegionAttachment attachment = (RegionAttachment) skeleton.findSlot(buttonName).getAttachment();
+        if (attachment == null) return new Rectangle();
+
+        float buttonX = bone.getWorldX() - (attachment.getWidth() * bone.getScaleX() / 2);
+        float buttonY = bone.getWorldY() - (attachment.getHeight() * bone.getScaleY() / 2);
+        float buttonWidth = attachment.getWidth() * bone.getScaleX();
+        float buttonHeight = attachment.getHeight() * bone.getScaleY();
+
+        buttonY = camera.viewportHeight - buttonY - buttonHeight;
+
+        return new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
+    }
+
+    @Override
+    public void render(float delta) {
+        super.render(delta);
+
+        state.update(delta * speedMultiplier);
+        state.apply(skeleton);
+        skeleton.updateWorldTransform();
+
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
+
+        batch.begin();
+        // Draw the background
+        batch.draw(backgroundTexture, 0, 0, camera.viewportWidth, camera.viewportHeight);
+        renderer.draw(batch, skeleton);
+        super.renderTrail(delta);
+        batch.end();
+
+        setSkeletonPosition();
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        camera.setToOrtho(false, width, height);
+        camera.update();
+        setSkeletonPosition();
+    }
+
+    private void setSkeletonPosition() {
+        float centerX = camera.viewportWidth / 2;
+        float centerY = camera.viewportHeight / 2;
+        skeleton.setPosition(centerX, centerY);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        font.dispose();
+        backgroundTexture.dispose(); // Dispose the background texture
+    }
+}
+
+public class Constants {
+    public static class Animation {
+        public static final int NUM_COLS = 28; // Number of columns in the sprite sheet
+        public static final int NUM_ROWS = 28; // Number of rows in the sprite sheet
+        public static final float FRAME_DURATION = 5f / 100f; // Duration of each frame
+    }
+
+    public static class Game {
+        public static final float ROTATION_SPEED = 1f / 20f; // Speed factor for rotation
+        public static final float LERP_FACTOR = 0.1f; // Factor for interpolation
+    }
+
+    public static class Buttons {
+        public static final int BUTTON_WIDTH = 100;
+        public static final int BUTTON_HEIGHT = 80;
+        public static final int PADDING = 5;
+        public static final int SLIDER_WIDTH = 300;
+        public static final int CONTROL_BUTTON_HEIGHT = 50;
+        public static final int BACK_BUTTON_WIDTH = 150;
+        public static final int CONTROL_BUTTON_WIDTH = 300;
+    }
+
+    public static class Audio {
+        public static final float DEFAULT_VOLUME = 1f;
+    }
+
+    public static class Cursor {
+        public static final int HOTSPOT_X = 0;
+        public static final int HOTSPOT_Y = 0;
+        public static final String IMAGE_PATH = "cursor.png";
+    }
+
+    public static class TrailDot {
+        public static final int NUMBER_OF_COLORS = 360; // Maintain at 360 for full color rotation
+        public static final float SATURATION = 1.0f;
+        public static final float VALUE = 1.0f;
+        public static final float ALPHA = 0.5f;
+        public static final float MIN_SCALE = 0.2f;
+        public static final float MAX_SCALE = 0.5f;
+        public static final int MIN_ROTATION = 0;
+        public static final int MAX_ROTATION = 359;
+    }
+
+    public static class MainMenu {
+        public static final String ATLAS = "spine/menu.atlas";
+        public static final String JSON = "spine/menu.json";
+    }
+
+    public static class CursorTrail {
+        public static final String ATLAS = "spine/trailDot.atlas";
+        public static final String JSON = "spine/trailDot.json";
+    }
+
+    public static class Skin {
+        public static final String JSON = "skin/default/skin/uiskin.json";
+    }
+
+    public static class Coin {
+        public static class Yellow {
+            public static final String ATLAS = "spine/coin-yellow.atlas";
+            public static final String JSON = "spine/coin-yellow.json";
+        }
+
+        public static class Red {
+            public static final String ATLAS = "spine/coin-red.atlas";
+            public static final String JSON = "spine/coin-red.json";
+        }
+    }
+
+    public static class Sounds {
+        public static final String OOF = "sounds/sound.ogg";
+    }
+
+    public enum ScreenType {
+        MENU,
+        GAME,
+        OPTIONS,
+    }
+
+    public enum GameState {
+        RUNNING,
+        PAUSED,
+        GAME_OVER;
+    }
+
+    public enum HairColor {
+        BLONDE, BRUNETTE, REDHEAD;
+
+        private static HairColor[] vals = values();
+        public HairColor next() {
+            return vals[(this.ordinal() + 1) % vals.length];
+        }
+    }
+
+    public enum Height {
+        SHORT, AVERAGE, TALL;
+
+        private static Height[] vals = values();
+        public Height next() {
+            return vals[(this.ordinal() + 1) % vals.length];
+        }
+    }
+
+    public static class Font {
+        public static final String PATH = "fonts/Playground.ttf";
+        public static final String BUTTON = "custom-button";
+        public static final String LABEL = "custom-label";
+        public static final String FONT = "custom-font";
+    }
+
+    public static class Background {
+        public static final String PATH = "background.jpg";
+    }
+}
+
+
