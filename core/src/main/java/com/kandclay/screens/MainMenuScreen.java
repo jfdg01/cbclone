@@ -2,19 +2,13 @@ package com.kandclay.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.esotericsoftware.spine.AnimationState;
-import com.esotericsoftware.spine.Bone;
-import com.esotericsoftware.spine.Skeleton;
-import com.esotericsoftware.spine.SkeletonRenderer;
+import com.esotericsoftware.spine.*;
 import com.esotericsoftware.spine.attachments.RegionAttachment;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.managers.ScreenManager;
@@ -134,15 +128,30 @@ public class MainMenuScreen extends BaseScreen {
         Bone bone = skeleton.findBone(buttonName);
         if (bone == null) return new Rectangle();
 
-        RegionAttachment attachment = (RegionAttachment) skeleton.findSlot(buttonName).getAttachment();
+        Slot slot = skeleton.findSlot(buttonName);
+        if (slot == null || !(slot.getAttachment() instanceof RegionAttachment)) return new Rectangle();
+
+        RegionAttachment attachment = (RegionAttachment) slot.getAttachment();
         if (attachment == null) return new Rectangle();
 
-        float buttonX = bone.getWorldX() - (attachment.getWidth() * bone.getScaleX() / 2);
-        float buttonY = bone.getWorldY() - (attachment.getHeight() * bone.getScaleY() / 2);
-        float buttonWidth = attachment.getWidth() * bone.getScaleX();
-        float buttonHeight = attachment.getHeight() * bone.getScaleY();
+        // Calculate the world position and dimensions of the button
+        float[] vertices = new float[8];
+        attachment.computeWorldVertices(slot.getBone(), vertices, 0, 2);
 
-        return new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
+        // Calculate bounds based on the vertices
+        float minX = vertices[0];
+        float minY = vertices[1];
+        float maxX = vertices[0];
+        float maxY = vertices[1];
+
+        for (int i = 2; i < vertices.length; i += 2) {
+            if (vertices[i] < minX) minX = vertices[i];
+            if (vertices[i + 1] < minY) minY = vertices[i + 1];
+            if (vertices[i] > maxX) maxX = vertices[i];
+            if (vertices[i + 1] > maxY) maxY = vertices[i + 1];
+        }
+
+        return new Rectangle(minX, minY, maxX - minX, maxY - minY);
     }
 
     @Override
@@ -197,7 +206,8 @@ public class MainMenuScreen extends BaseScreen {
 
     private void setSkeletonScale() {
         if (skeleton != null) {
-            float scale = viewport.getWorldWidth() * 0.7f / skeleton.getData().getWidth();
+            float scale = viewport.getWorldWidth() / skeleton.getData().getWidth();
+            scale *= 1.2f;
             skeleton.setScale(scale, scale);
         }
     }
