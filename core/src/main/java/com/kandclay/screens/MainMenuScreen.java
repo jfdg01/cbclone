@@ -1,10 +1,12 @@
 package com.kandclay.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -29,6 +31,7 @@ public class MainMenuScreen extends BaseScreen {
     private boolean isQuitHovered = false;
     private boolean isSettingsHovered = false;
     private Texture backgroundTexture;
+    private ShapeRenderer shapeRenderer;
 
     public MainMenuScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -43,10 +46,9 @@ public class MainMenuScreen extends BaseScreen {
 
         initializeAnimations();
 
-        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         font = new BitmapFont();
-
         backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class);
+        shapeRenderer = new ShapeRenderer();
 
         stage.addListener(new InputListener() {
             @Override
@@ -69,16 +71,14 @@ public class MainMenuScreen extends BaseScreen {
 
         skeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
         state = spineAnimationHandler.createAnimationState(skeleton);
-        skeleton.setScale(1f, 1f);
 
+        setSkeletonScale();
         setSkeletonPosition();
         state.setAnimation(0, "animation", false);
     }
 
     private void handleHover(float x, float y) {
-        Vector2 stageCoords = stage.screenToStageCoordinates(new Vector2(x, y));
-
-        if (isHoveringButton(stageCoords.x, stageCoords.y, "play")) {
+        if (isHoveringButton(x, y, "play")) {
             if (!isPlayHovered) {
                 state.setAnimation(1, "Buttons/PlayHoverIn", false);
                 isPlayHovered = true;
@@ -90,7 +90,7 @@ public class MainMenuScreen extends BaseScreen {
             }
         }
 
-        if (isHoveringButton(stageCoords.x, stageCoords.y, "quit")) {
+        if (isHoveringButton(x, y, "quit")) {
             if (!isQuitHovered) {
                 state.setAnimation(2, "Buttons/QuitHoverIn", false);
                 isQuitHovered = true;
@@ -102,7 +102,7 @@ public class MainMenuScreen extends BaseScreen {
             }
         }
 
-        if (isHoveringButton(stageCoords.x, stageCoords.y, "settings")) {
+        if (isHoveringButton(x, y, "settings")) {
             if (!isSettingsHovered) {
                 state.setAnimation(3, "Buttons/SettingsHoverIn", false);
                 isSettingsHovered = true;
@@ -116,13 +116,11 @@ public class MainMenuScreen extends BaseScreen {
     }
 
     private void handleClick(float x, float y) {
-        Vector2 stageCoords = stage.screenToStageCoordinates(new Vector2(x, y));
-
-        if (isHoveringButton(stageCoords.x, stageCoords.y, "play")) {
+        if (isHoveringButton(x, y, "play")) {
             screenManager.setScreen(Constants.ScreenType.GAME);
-        } else if (isHoveringButton(stageCoords.x, stageCoords.y, "quit")) {
+        } else if (isHoveringButton(x, y, "quit")) {
             Gdx.app.exit();
-        } else if (isHoveringButton(stageCoords.x, stageCoords.y, "settings")) {
+        } else if (isHoveringButton(x, y, "settings")) {
             screenManager.setScreen(Constants.ScreenType.OPTIONS);
         }
     }
@@ -144,8 +142,6 @@ public class MainMenuScreen extends BaseScreen {
         float buttonWidth = attachment.getWidth() * bone.getScaleX();
         float buttonHeight = attachment.getHeight() * bone.getScaleY();
 
-        buttonY = camera.viewportHeight - buttonY - buttonHeight;
-
         return new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
     }
 
@@ -157,32 +153,52 @@ public class MainMenuScreen extends BaseScreen {
         state.apply(skeleton);
         skeleton.updateWorldTransform();
 
-        camera.update();
+        viewport.apply();
         batch.setProjectionMatrix(camera.combined);
-
         batch.begin();
         // Draw the background
-        batch.draw(backgroundTexture, 0, 0, camera.viewportWidth, camera.viewportHeight);
+        batch.draw(backgroundTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         renderer.draw(batch, skeleton);
         super.renderTrail(delta);
         batch.end();
 
         setSkeletonPosition();
+
+        // Draw debug rectangles
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.RED);
+        drawDebugBounds("play");
+        drawDebugBounds("quit");
+        drawDebugBounds("settings");
+        shapeRenderer.end();
+    }
+
+    private void drawDebugBounds(String buttonName) {
+        Rectangle bounds = getButtonBounds(buttonName);
+        shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        camera.setToOrtho(false, width, height);
-        camera.update();
+        viewport.update(width, height, true);
+        setSkeletonScale();
         setSkeletonPosition();
     }
 
     private void setSkeletonPosition() {
         if (skeleton != null) {
-            float centerX = camera.viewportWidth / 2;
-            float centerY = camera.viewportHeight / 2;
+            float centerX = viewport.getWorldWidth() / 2;
+            float centerY = viewport.getWorldHeight() / 2;
             skeleton.setPosition(centerX, centerY);
+        }
+    }
+
+    private void setSkeletonScale() {
+        if (skeleton != null) {
+            float scale = viewport.getWorldWidth() * 0.7f / skeleton.getData().getWidth();
+            skeleton.setScale(scale, scale);
         }
     }
 
@@ -191,5 +207,6 @@ public class MainMenuScreen extends BaseScreen {
         super.dispose();
         font.dispose();
         backgroundTexture.dispose();
+        shapeRenderer.dispose();
     }
 }
