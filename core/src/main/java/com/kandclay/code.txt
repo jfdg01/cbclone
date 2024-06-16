@@ -1197,10 +1197,11 @@ public class MainAnimationScreen extends BaseScreen {
     }
 
     private void setSkeletonPosition() {
-        // Center the skeleton on the screen
-        float centerX = (camera.viewportWidth - skeleton.getData().getWidth()) / 2;
-        float centerY = (camera.viewportHeight - skeleton.getData().getHeight()) / 2;
-        skeleton.setPosition(centerX, centerY);
+        if (skeleton != null) { // Ensure skeleton is not null before setting position
+            float centerX = (camera.viewportWidth - skeleton.getData().getWidth()) / 2;
+            float centerY = (camera.viewportHeight - skeleton.getData().getHeight()) / 2;
+            skeleton.setPosition(centerX, centerY);
+        }
     }
 
     @Override
@@ -1210,6 +1211,7 @@ public class MainAnimationScreen extends BaseScreen {
 }
 
 
+
 public class MainMenuScreen extends BaseScreen {
 
     private SkeletonRenderer renderer;
@@ -1217,10 +1219,9 @@ public class MainMenuScreen extends BaseScreen {
     private AnimationState state;
     private BitmapFont font;
     private float speedMultiplier = 1f;
-    private boolean isPlayHovered = false;
-    private boolean isQuitHovered = false;
-    private boolean isSettingsHovered = false;
+    private Map<String, Boolean> hoverStates;
     private Texture backgroundTexture;
+    private ShapeRenderer shapeRenderer;
 
     public MainMenuScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -1235,11 +1236,14 @@ public class MainMenuScreen extends BaseScreen {
 
         initializeAnimations();
 
-        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         font = new BitmapFont();
-
-        // Load the background texture
         backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class);
+        shapeRenderer = new ShapeRenderer();
+
+        hoverStates = new HashMap<String, Boolean>();
+        hoverStates.put(Constants.MainMenu.BUTTON_PLAY, false);
+        hoverStates.put(Constants.MainMenu.BUTTON_QUIT, false);
+        hoverStates.put(Constants.MainMenu.BUTTON_SETTINGS, false);
 
         stage.addListener(new InputListener() {
             @Override
@@ -1262,60 +1266,37 @@ public class MainMenuScreen extends BaseScreen {
 
         skeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
         state = spineAnimationHandler.createAnimationState(skeleton);
-        skeleton.setScale(1f, 1f);
 
+        setSkeletonScale();
         setSkeletonPosition();
         state.setAnimation(0, "animation", false);
     }
 
     private void handleHover(float x, float y) {
-        Vector2 stageCoords = stage.screenToStageCoordinates(new Vector2(x, y));
+        updateHoverState(x, y, Constants.MainMenu.BUTTON_PLAY, 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
+        updateHoverState(x, y, Constants.MainMenu.BUTTON_QUIT, 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
+        updateHoverState(x, y, Constants.MainMenu.BUTTON_SETTINGS, 3, "Buttons/SettingsHoverIn", "Buttons/SettingsHoverOut");
+    }
 
-        if (isHoveringButton(stageCoords.x, stageCoords.y, "play")) {
-            if (!isPlayHovered) {
-                state.setAnimation(1, "Buttons/PlayHoverIn", false);
-                isPlayHovered = true;
-            }
-        } else {
-            if (isPlayHovered) {
-                state.setAnimation(1, "Buttons/PlayHoverOut", false);
-                isPlayHovered = false;
-            }
+    private void updateHoverState(float x, float y, String buttonName, int trackIndex, String hoverInAnim, String hoverOutAnim) {
+        boolean isHovered = isHoveringButton(x, y, buttonName);
+        boolean wasHovered = hoverStates.get(buttonName);
+
+        if (isHovered && !wasHovered) {
+            state.setAnimation(trackIndex, hoverInAnim, false);
+        } else if (!isHovered && wasHovered) {
+            state.setAnimation(trackIndex, hoverOutAnim, false);
         }
 
-        if (isHoveringButton(stageCoords.x, stageCoords.y, "quit")) {
-            if (!isQuitHovered) {
-                state.setAnimation(2, "Buttons/QuitHoverIn", false);
-                isQuitHovered = true;
-            }
-        } else {
-            if (isQuitHovered) {
-                state.setAnimation(2, "Buttons/QuitHoverOut", false);
-                isQuitHovered = false;
-            }
-        }
-
-        if (isHoveringButton(stageCoords.x, stageCoords.y, "settings")) {
-            if (!isSettingsHovered) {
-                state.setAnimation(3, "Buttons/SettingsHoverIn", false);
-                isSettingsHovered = true;
-            }
-        } else {
-            if (isSettingsHovered) {
-                state.setAnimation(3, "Buttons/SettingsHoverOut", false);
-                isSettingsHovered = false;
-            }
-        }
+        hoverStates.put(buttonName, isHovered);
     }
 
     private void handleClick(float x, float y) {
-        Vector2 stageCoords = stage.screenToStageCoordinates(new Vector2(x, y));
-
-        if (isHoveringButton(stageCoords.x, stageCoords.y, "play")) {
+        if (isHoveringButton(x, y, Constants.MainMenu.BUTTON_PLAY)) {
             screenManager.setScreen(Constants.ScreenType.GAME);
-        } else if (isHoveringButton(stageCoords.x, stageCoords.y, "quit")) {
+        } else if (isHoveringButton(x, y, Constants.MainMenu.BUTTON_QUIT)) {
             Gdx.app.exit();
-        } else if (isHoveringButton(stageCoords.x, stageCoords.y, "settings")) {
+        } else if (isHoveringButton(x, y, Constants.MainMenu.BUTTON_SETTINGS)) {
             screenManager.setScreen(Constants.ScreenType.OPTIONS);
         }
     }
@@ -1329,17 +1310,30 @@ public class MainMenuScreen extends BaseScreen {
         Bone bone = skeleton.findBone(buttonName);
         if (bone == null) return new Rectangle();
 
-        RegionAttachment attachment = (RegionAttachment) skeleton.findSlot(buttonName).getAttachment();
+        Slot slot = skeleton.findSlot(buttonName);
+        if (slot == null || !(slot.getAttachment() instanceof RegionAttachment)) return new Rectangle();
+
+        RegionAttachment attachment = (RegionAttachment) slot.getAttachment();
         if (attachment == null) return new Rectangle();
 
-        float buttonX = bone.getWorldX() - (attachment.getWidth() * bone.getScaleX() / 2);
-        float buttonY = bone.getWorldY() - (attachment.getHeight() * bone.getScaleY() / 2);
-        float buttonWidth = attachment.getWidth() * bone.getScaleX();
-        float buttonHeight = attachment.getHeight() * bone.getScaleY();
+        // Calculate the world position and dimensions of the button
+        float[] vertices = new float[8];
+        attachment.computeWorldVertices(slot.getBone(), vertices, 0, 2);
 
-        buttonY = camera.viewportHeight - buttonY - buttonHeight;
+        // Calculate bounds based on the vertices
+        float minX = vertices[0];
+        float minY = vertices[1];
+        float maxX = vertices[0];
+        float maxY = vertices[1];
 
-        return new Rectangle(buttonX, buttonY, buttonWidth, buttonHeight);
+        for (int i = 2; i < vertices.length; i += 2) {
+            if (vertices[i] < minX) minX = vertices[i];
+            if (vertices[i + 1] < minY) minY = vertices[i + 1];
+            if (vertices[i] > maxX) maxX = vertices[i];
+            if (vertices[i + 1] > maxY) maxY = vertices[i + 1];
+        }
+
+        return new Rectangle(minX, minY, maxX - minX, maxY - minY);
     }
 
     @Override
@@ -1350,42 +1344,101 @@ public class MainMenuScreen extends BaseScreen {
         state.apply(skeleton);
         skeleton.updateWorldTransform();
 
-        camera.update();
+        viewport.apply();
         batch.setProjectionMatrix(camera.combined);
-
         batch.begin();
         // Draw the background
-        batch.draw(backgroundTexture, 0, 0, camera.viewportWidth, camera.viewportHeight);
+        batch.draw(backgroundTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         renderer.draw(batch, skeleton);
         super.renderTrail(delta);
         batch.end();
 
         setSkeletonPosition();
+
+        //renderDebug();
+    }
+
+    private void renderDebug() {
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.RED);
+        drawDebugBounds(Constants.MainMenu.BUTTON_PLAY);
+        drawDebugBounds(Constants.MainMenu.BUTTON_QUIT);
+        drawDebugBounds(Constants.MainMenu.BUTTON_SETTINGS);
+        shapeRenderer.end();
+    }
+
+    private void drawDebugBounds(String buttonName) {
+        Rectangle bounds = getButtonBounds(buttonName);
+        shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        camera.setToOrtho(false, width, height);
-        camera.update();
+        viewport.update(width, height, true);
+        setSkeletonScale();
         setSkeletonPosition();
     }
 
     private void setSkeletonPosition() {
-        float centerX = camera.viewportWidth / 2;
-        float centerY = camera.viewportHeight / 2;
-        skeleton.setPosition(centerX, centerY);
+        if (skeleton != null) {
+            float centerX = viewport.getWorldWidth() / 2;
+            float centerY = viewport.getWorldHeight() / 2;
+            skeleton.setPosition(centerX, centerY);
+        }
+    }
+
+    private void setSkeletonScale() {
+        if (skeleton != null) {
+            float scale = viewport.getWorldWidth() / skeleton.getData().getWidth();
+            scale *= 1.2f;
+            skeleton.setScale(scale, scale);
+        }
     }
 
     @Override
     public void dispose() {
         super.dispose();
         font.dispose();
-        backgroundTexture.dispose(); // Dispose the background texture
+        backgroundTexture.dispose();
+        shapeRenderer.dispose();
     }
 }
 
 public class Constants {
+
+    public enum ScreenType {
+        MENU,
+        GAME,
+        OPTIONS,
+    }
+
+    public enum GameState {
+        RUNNING,
+        PAUSED,
+        GAME_OVER
+    }
+
+    public enum HairColor {
+        BLONDE, BRUNETTE, REDHEAD;
+
+        private static final HairColor[] vals = values();
+
+        public HairColor next() {
+            return vals[(this.ordinal() + 1) % vals.length];
+        }
+    }
+
+    public enum Height {
+        SHORT, AVERAGE, TALL;
+
+        private static final Height[] vals = values();
+
+        public Height next() {
+            return vals[(this.ordinal() + 1) % vals.length];
+        }
+    }
 
     public static class General {
         public static final int WIDTH = 800;
@@ -1438,6 +1491,9 @@ public class Constants {
     public static class MainMenu {
         public static final String ATLAS = "spine/menu.atlas";
         public static final String JSON = "spine/menu.json";
+        public static final String BUTTON_PLAY = "play";
+        public static final String BUTTON_QUIT = "quit";
+        public static final String BUTTON_SETTINGS = "settings";
     }
 
     public static class CursorTrail {
@@ -1463,36 +1519,6 @@ public class Constants {
 
     public static class Sounds {
         public static final String OOF = "sounds/sound.ogg";
-    }
-
-    public enum ScreenType {
-        MENU,
-        GAME,
-        OPTIONS,
-    }
-
-    public enum GameState {
-        RUNNING,
-        PAUSED,
-        GAME_OVER;
-    }
-
-    public enum HairColor {
-        BLONDE, BRUNETTE, REDHEAD;
-
-        private static HairColor[] vals = values();
-        public HairColor next() {
-            return vals[(this.ordinal() + 1) % vals.length];
-        }
-    }
-
-    public enum Height {
-        SHORT, AVERAGE, TALL;
-
-        private static Height[] vals = values();
-        public Height next() {
-            return vals[(this.ordinal() + 1) % vals.length];
-        }
     }
 
     public static class Font {

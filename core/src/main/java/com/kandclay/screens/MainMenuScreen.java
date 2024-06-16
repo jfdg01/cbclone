@@ -65,6 +65,7 @@ public class MainMenuScreen extends BaseScreen {
         });
     }
 
+    // Initialize animations and other setup
     private void initializeAnimations() {
         String atlasPath = Constants.MainMenu.ATLAS;
         String skeletonPath = Constants.MainMenu.JSON;
@@ -77,6 +78,7 @@ public class MainMenuScreen extends BaseScreen {
         state.setAnimation(0, "animation", false);
     }
 
+    // Handle hover states for buttons
     private void handleHover(float x, float y) {
         updateHoverState(x, y, Constants.MainMenu.BUTTON_PLAY, 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
         updateHoverState(x, y, Constants.MainMenu.BUTTON_QUIT, 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
@@ -206,7 +208,7 @@ public class MainMenuScreen extends BaseScreen {
     public void dispose() {
         super.dispose();
         font.dispose();
-        backgroundTexture.dispose();
+        // Do not dispose of backgroundTexture here if it's shared
         shapeRenderer.dispose();
     }
 }
