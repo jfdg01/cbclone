@@ -2,6 +2,7 @@ package com.kandclay;
 
 import com.badlogic.gdx.Gdx;
 
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -11,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.kandclay.handlers.SpriteSheetAnimationHandler;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.managers.AudioManager;
@@ -22,6 +24,8 @@ import com.kandclay.utils.Constants.ScreenType;
 
 
 public class Main extends ApplicationAdapter {
+    private OrthographicCamera camera;
+    private FitViewport viewport;
     private SpriteBatch batch;
     private MyAssetManager assetManager;
     private AudioManager audioManager;
@@ -32,8 +36,9 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
-
-        Gdx.graphics.setWindowedMode(Constants.General.WIDTH, Constants.General.HEIGHT);
+        camera = new OrthographicCamera();
+        viewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT, camera);
+        viewport.apply();
 
         configManager = ConfigurationManager.getInstance();
         assetManager = MyAssetManager.getInstance();
@@ -43,8 +48,6 @@ public class Main extends ApplicationAdapter {
         spineAnimationHandler = new SpineAnimationHandler();
 
         loadInitialAssets();
-
-
         screenManager.setScreen(ScreenType.MENU);
     }
 
@@ -89,8 +92,8 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height) {
-        width = Constants.General.WIDTH;
-        height = Constants.General.HEIGHT;
+        viewport.update(width, height);
+        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         screenManager.resize(width, height);
     }
 

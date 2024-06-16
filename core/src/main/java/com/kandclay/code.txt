@@ -1,47 +1,11 @@
 
 
-/** First screen of the application. Displayed after the application is created. */
-public class FirstScreen implements Screen {
-    @Override
-    public void show() {
-        // Prepare your screen here.
-    }
-
-    @Override
-    public void render(float delta) {
-        // Draw your screen here. "delta" is the time since last render in seconds.
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        // Resize your screen here. The parameters represent the new window size.
-    }
-
-    @Override
-    public void pause() {
-        // Invoked when your application is paused.
-    }
-
-    @Override
-    public void resume() {
-        // Invoked when your application is resumed after pause.
-    }
-
-    @Override
-    public void hide() {
-        // This method is called when another screen replaces this one.
-    }
-
-    @Override
-    public void dispose() {
-        // Destroy screen's assets here.
-    }
-}
-
 
 
 
 public class Main extends ApplicationAdapter {
+    private OrthographicCamera camera;
+    private FitViewport viewport;
     private SpriteBatch batch;
     private MyAssetManager assetManager;
     private AudioManager audioManager;
@@ -52,6 +16,10 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
+        camera = new OrthographicCamera();
+        viewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT, camera);
+        viewport.apply();
+
         configManager = ConfigurationManager.getInstance();
         assetManager = MyAssetManager.getInstance();
         audioManager = AudioManager.getInstance();
@@ -60,8 +28,6 @@ public class Main extends ApplicationAdapter {
         spineAnimationHandler = new SpineAnimationHandler();
 
         loadInitialAssets();
-
-
         screenManager.setScreen(ScreenType.MENU);
     }
 
@@ -106,6 +72,8 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height) {
+        viewport.update(width, height);
+        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         screenManager.resize(width, height);
     }
 
@@ -547,6 +515,14 @@ public class ConfigurationManager {
     // Private constructor to prevent instantiation
     private ConfigurationManager() {
         preferences = Gdx.app.getPreferences("config");
+//        if (!preferences.contains("width")) {
+//            preferences.putInteger("width", Constants.General.WIDTH);
+//            preferences.flush();
+//        }
+//        if (!preferences.contains("height")) {
+//            preferences.putInteger("height", Constants.General.HEIGHT);
+//            preferences.flush();
+//        }
     }
 
     // Thread-safe method to get the singleton instance
@@ -751,6 +727,8 @@ public abstract class BaseScreen implements Screen {
     protected SpineAnimationHandler spineAnimationHandler;
     protected ConfigurationManager configManager;
     protected ScreenManager screenManager;
+    protected OrthographicCamera camera;
+    protected FitViewport viewport;
     private SnapshotArray<TrailDot> trailDots;
     private int trailDotCount = 0;
     protected SpriteBatch batch;
@@ -761,8 +739,13 @@ public abstract class BaseScreen implements Screen {
         this.configManager = ConfigurationManager.getInstance();
         this.spineAnimationHandler = spineAnimationHandler;
         this.screenManager = screenManager;
-        this.stage = new Stage(new ScreenViewport());
-        this.trailDots = new SnapshotArray<>();
+
+        // Initialize camera and viewport
+        this.camera = new OrthographicCamera();
+        this.viewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT, camera);
+
+        this.stage = new Stage(viewport);
+        this.trailDots = new SnapshotArray<TrailDot>();
         this.batch = new SpriteBatch();
         Gdx.input.setInputProcessor(stage);
 
@@ -778,6 +761,7 @@ public abstract class BaseScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     public void clearScreen() {
@@ -809,7 +793,10 @@ public abstract class BaseScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
+        viewport.update(width, height);
+        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         stage.getViewport().update(width, height, true);
+        viewport.update(width, height);  // Update the viewport
     }
 
     @Override
@@ -886,11 +873,9 @@ public class ConfigurationScreen extends BaseScreen {
     private Slider volumeSlider;
     private TextButton backButton;
     private TextButton hairColorButton;
-    private TextButton heightButton;
     private TextButton coinColorButton;
 
     private Constants.HairColor currentHairColor;
-    private Constants.Height currentHeight;
     private boolean isYellowCoin;
 
     public ConfigurationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
@@ -907,11 +892,9 @@ public class ConfigurationScreen extends BaseScreen {
         // Load preferences
         float savedVolume = configManager.getPreference("volume", Constants.Audio.DEFAULT_VOLUME);
         String savedHairColor = configManager.getPreference("hairColor", Constants.HairColor.BLONDE.toString());
-        String savedHeight = configManager.getPreference("height", Constants.Height.AVERAGE.toString());
         isYellowCoin = configManager.getPreference("coinColor", true); // Default to yellow coin
 
         currentHairColor = Constants.HairColor.valueOf(savedHairColor);
-        currentHeight = Constants.Height.valueOf(savedHeight);
 
         // Create a slider for volume control
         volumeSlider = new Slider(0, 1, 0.01f, false, skin);
@@ -945,16 +928,6 @@ public class ConfigurationScreen extends BaseScreen {
             }
         });
 
-        heightButton = new TextButton("Height: " + currentHeight, skin,  Constants.Font.BUTTON);
-        heightButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                currentHeight = currentHeight.next();
-                heightButton.setText("Height: " + currentHeight);
-                configManager.setPreference("height", currentHeight.toString()); // Save height preference
-            }
-        });
-
         coinColorButton = new TextButton("Coin Color: " + (isYellowCoin ? "Yellow" : "Red"), skin,  Constants.Font.BUTTON);
         coinColorButton.addListener(new ChangeListener() {
             @Override
@@ -973,7 +946,6 @@ public class ConfigurationScreen extends BaseScreen {
         table.add(new Label("Volume", skin, Constants.Font.LABEL)).padBottom(Constants.Buttons.PADDING).row();
         table.add(volumeSlider).width(Constants.Buttons.SLIDER_WIDTH).padBottom(Constants.Buttons.PADDING).row();
         table.add(hairColorButton).width(Constants.Buttons.CONTROL_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.Buttons.PADDING).row();
-        table.add(heightButton).width(Constants.Buttons.CONTROL_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.Buttons.PADDING).row();
         table.add(coinColorButton).width(Constants.Buttons.CONTROL_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.Buttons.PADDING).row();
         table.add(backButton).width(Constants.Buttons.BACK_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padTop(Constants.Buttons.PADDING);
 
@@ -1003,7 +975,6 @@ public class ConfigurationScreen extends BaseScreen {
 
 
 public class MainAnimationScreen extends BaseScreen {
-    private OrthographicCamera camera;
     private SkeletonRenderer renderer;
     private SpineAnimationHandler spineAnimationHandler;
 
@@ -1029,7 +1000,6 @@ public class MainAnimationScreen extends BaseScreen {
     public void show() {
         super.show();
 
-        camera = new OrthographicCamera();
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
 
@@ -1044,7 +1014,7 @@ public class MainAnimationScreen extends BaseScreen {
         Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
 
         // Initialize back button
-        backButton = new TextButton("Back to Menu", skin,  Constants.Font.BUTTON);
+        backButton = new TextButton("Back to Menu", skin, Constants.Font.BUTTON);
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -1071,7 +1041,7 @@ public class MainAnimationScreen extends BaseScreen {
         });
 
         // Initialize mode button
-        modeButton = new TextButton("Switch to Manual Mode", skin,  Constants.Font.BUTTON);
+        modeButton = new TextButton("Switch to Manual Mode", skin, Constants.Font.BUTTON);
         modeButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -1087,7 +1057,7 @@ public class MainAnimationScreen extends BaseScreen {
         });
 
         // Initialize change color button
-        changeColorButton = new TextButton("Change Coin Color", skin,  Constants.Font.BUTTON);
+        changeColorButton = new TextButton("Change Coin Color", skin, Constants.Font.BUTTON);
         changeColorButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -1096,7 +1066,7 @@ public class MainAnimationScreen extends BaseScreen {
         });
 
         // Initialize speed control buttons
-        TextButton speed1xButton = new TextButton("1x", skin,  Constants.Font.BUTTON);
+        TextButton speed1xButton = new TextButton("1x", skin, Constants.Font.BUTTON);
         speed1xButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -1105,7 +1075,7 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        TextButton speed2xButton = new TextButton("2x", skin,  Constants.Font.BUTTON);
+        TextButton speed2xButton = new TextButton("2x", skin, Constants.Font.BUTTON);
         speed2xButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -1114,7 +1084,7 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        TextButton speed3xButton = new TextButton("3x", skin,  Constants.Font.BUTTON);
+        TextButton speed3xButton = new TextButton("3x", skin, Constants.Font.BUTTON);
         speed3xButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -1242,7 +1212,6 @@ public class MainAnimationScreen extends BaseScreen {
 
 public class MainMenuScreen extends BaseScreen {
 
-    private OrthographicCamera camera;
     private SkeletonRenderer renderer;
     private Skeleton skeleton;
     private AnimationState state;
@@ -1261,7 +1230,6 @@ public class MainMenuScreen extends BaseScreen {
     public void show() {
         super.show();
 
-        camera = new OrthographicCamera();
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
 
@@ -1271,7 +1239,7 @@ public class MainMenuScreen extends BaseScreen {
         font = new BitmapFont();
 
         // Load the background texture
-        backgroundTexture = assetManager.get("background.jpg", Texture.class);
+        backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class);
 
         stage.addListener(new InputListener() {
             @Override
@@ -1418,6 +1386,13 @@ public class MainMenuScreen extends BaseScreen {
 }
 
 public class Constants {
+
+    public static class General {
+        public static final int WIDTH = 800;
+        public static final int HEIGHT = 600;
+        public static final String TITLE = "K and Clay";
+    }
+
     public static class Animation {
         public static final int NUM_COLS = 28; // Number of columns in the sprite sheet
         public static final int NUM_ROWS = 28; // Number of rows in the sprite sheet

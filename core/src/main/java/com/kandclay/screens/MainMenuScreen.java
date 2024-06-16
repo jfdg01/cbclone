@@ -20,7 +20,6 @@ import com.kandclay.utils.Constants;
 
 public class MainMenuScreen extends BaseScreen {
 
-    private OrthographicCamera camera;
     private SkeletonRenderer renderer;
     private Skeleton skeleton;
     private AnimationState state;
@@ -39,7 +38,6 @@ public class MainMenuScreen extends BaseScreen {
     public void show() {
         super.show();
 
-        camera = new OrthographicCamera();
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
 
@@ -48,8 +46,7 @@ public class MainMenuScreen extends BaseScreen {
         resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         font = new BitmapFont();
 
-        // Load the background texture
-        backgroundTexture = assetManager.get("background.jpg", Texture.class);
+        backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class);
 
         stage.addListener(new InputListener() {
             @Override
@@ -182,15 +179,17 @@ public class MainMenuScreen extends BaseScreen {
     }
 
     private void setSkeletonPosition() {
-        float centerX = camera.viewportWidth / 2;
-        float centerY = camera.viewportHeight / 2;
-        skeleton.setPosition(centerX, centerY);
+        if (skeleton != null) {
+            float centerX = camera.viewportWidth / 2;
+            float centerY = camera.viewportHeight / 2;
+            skeleton.setPosition(centerX, centerY);
+        }
     }
 
     @Override
     public void dispose() {
         super.dispose();
         font.dispose();
-        backgroundTexture.dispose(); // Dispose the background texture
+        backgroundTexture.dispose();
     }
 }

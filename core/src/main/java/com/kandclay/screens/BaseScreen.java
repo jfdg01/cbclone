@@ -4,13 +4,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.SnapshotArray;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.esotericsoftware.spine.AnimationState;
 import com.esotericsoftware.spine.Skeleton;
 import com.esotericsoftware.spine.SkeletonRenderer;
@@ -30,6 +31,8 @@ public abstract class BaseScreen implements Screen {
     protected SpineAnimationHandler spineAnimationHandler;
     protected ConfigurationManager configManager;
     protected ScreenManager screenManager;
+    protected OrthographicCamera camera;
+    protected FitViewport viewport;
     private SnapshotArray<TrailDot> trailDots;
     private int trailDotCount = 0;
     protected SpriteBatch batch;
@@ -40,7 +43,12 @@ public abstract class BaseScreen implements Screen {
         this.configManager = ConfigurationManager.getInstance();
         this.spineAnimationHandler = spineAnimationHandler;
         this.screenManager = screenManager;
-        this.stage = new Stage(new ScreenViewport());
+
+        // Initialize camera and viewport
+        this.camera = new OrthographicCamera();
+        this.viewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT, camera);
+
+        this.stage = new Stage(viewport);
         this.trailDots = new SnapshotArray<TrailDot>();
         this.batch = new SpriteBatch();
         Gdx.input.setInputProcessor(stage);
@@ -57,6 +65,7 @@ public abstract class BaseScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     public void clearScreen() {
@@ -88,9 +97,10 @@ public abstract class BaseScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        width = Constants.General.WIDTH;
-        height = Constants.General.HEIGHT;
+        viewport.update(width, height);
+        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         stage.getViewport().update(width, height, true);
+        viewport.update(width, height);  // Update the viewport
     }
 
     @Override

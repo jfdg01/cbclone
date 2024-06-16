@@ -17,7 +17,6 @@ import com.kandclay.utils.Constants;
 import com.kandclay.managers.*;
 
 public class MainAnimationScreen extends BaseScreen {
-    private OrthographicCamera camera;
     private SkeletonRenderer renderer;
     private SpineAnimationHandler spineAnimationHandler;
 
@@ -43,7 +42,6 @@ public class MainAnimationScreen extends BaseScreen {
     public void show() {
         super.show();
 
-        camera = new OrthographicCamera();
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
 
@@ -58,7 +56,7 @@ public class MainAnimationScreen extends BaseScreen {
         Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
 
         // Initialize back button
-        backButton = new TextButton("Back to Menu", skin,  Constants.Font.BUTTON);
+        backButton = new TextButton("Back to Menu", skin, Constants.Font.BUTTON);
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -85,7 +83,7 @@ public class MainAnimationScreen extends BaseScreen {
         });
 
         // Initialize mode button
-        modeButton = new TextButton("Switch to Manual Mode", skin,  Constants.Font.BUTTON);
+        modeButton = new TextButton("Switch to Manual Mode", skin, Constants.Font.BUTTON);
         modeButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -101,7 +99,7 @@ public class MainAnimationScreen extends BaseScreen {
         });
 
         // Initialize change color button
-        changeColorButton = new TextButton("Change Coin Color", skin,  Constants.Font.BUTTON);
+        changeColorButton = new TextButton("Change Coin Color", skin, Constants.Font.BUTTON);
         changeColorButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -110,7 +108,7 @@ public class MainAnimationScreen extends BaseScreen {
         });
 
         // Initialize speed control buttons
-        TextButton speed1xButton = new TextButton("1x", skin,  Constants.Font.BUTTON);
+        TextButton speed1xButton = new TextButton("1x", skin, Constants.Font.BUTTON);
         speed1xButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -119,7 +117,7 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        TextButton speed2xButton = new TextButton("2x", skin,  Constants.Font.BUTTON);
+        TextButton speed2xButton = new TextButton("2x", skin, Constants.Font.BUTTON);
         speed2xButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -128,7 +126,7 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        TextButton speed3xButton = new TextButton("3x", skin,  Constants.Font.BUTTON);
+        TextButton speed3xButton = new TextButton("3x", skin, Constants.Font.BUTTON);
         speed3xButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -241,10 +239,11 @@ public class MainAnimationScreen extends BaseScreen {
     }
 
     private void setSkeletonPosition() {
-        // Center the skeleton on the screen
-        float centerX = (camera.viewportWidth - skeleton.getData().getWidth()) / 2;
-        float centerY = (camera.viewportHeight - skeleton.getData().getHeight()) / 2;
-        skeleton.setPosition(centerX, centerY);
+        if (skeleton != null) { // Ensure skeleton is not null before setting position
+            float centerX = (camera.viewportWidth - skeleton.getData().getWidth()) / 2;
+            float centerY = (camera.viewportHeight - skeleton.getData().getHeight()) / 2;
+            skeleton.setPosition(centerX, centerY);
+        }
     }
 
     @Override
