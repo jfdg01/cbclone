@@ -41,7 +41,7 @@ public abstract class BaseScreen implements Screen {
         this.spineAnimationHandler = spineAnimationHandler;
         this.screenManager = screenManager;
         this.stage = new Stage(new ScreenViewport());
-        this.trailDots = new SnapshotArray<>();
+        this.trailDots = new SnapshotArray<TrailDot>();
         this.batch = new SpriteBatch();
         Gdx.input.setInputProcessor(stage);
 
@@ -88,6 +88,8 @@ public abstract class BaseScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
+        width = Constants.General.WIDTH;
+        height = Constants.General.HEIGHT;
         stage.getViewport().update(width, height, true);
     }
 

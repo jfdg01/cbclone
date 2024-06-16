@@ -73,13 +73,17 @@ public class Main extends ApplicationAdapter {
         assetManager.load(Constants.Coin.Red.ATLAS, TextureAtlas.class);
         assetManager.load(Constants.Background.PATH, Texture.class);
 
+        // Load bitmap font
+        assetManager.load(Constants.Font.FONT_FNT, BitmapFont.class);
+
         assetManager.finishLoading();
         addFontsToSkin();
     }
 
+
     private void addFontsToSkin() {
         Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
-        BitmapFont customFont = generateFont(Constants.Font.PATH, 24);
+        BitmapFont customFont = assetManager.get(Constants.Font.FONT_FNT, BitmapFont.class);
         skin.add(Constants.Font.FONT, customFont, BitmapFont.class);
 
         Label.LabelStyle customLabelStyle = new Label.LabelStyle();
@@ -93,15 +97,6 @@ public class Main extends ApplicationAdapter {
         customButtonStyle.down = skin.getDrawable("default-rect-down");
         customButtonStyle.checked = skin.getDrawable("default-rect");
         skin.add(Constants.Font.BUTTON, customButtonStyle);
-    }
-
-    private BitmapFont generateFont(String fontFile, int size) {
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(fontFile));
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = size;
-        BitmapFont font = generator.generateFont(parameter);
-        generator.dispose(); // Dispose the generator to free up resources
-        return font;
     }
 
     @Override
@@ -1530,6 +1525,7 @@ public class Constants {
         public static final String BUTTON = "custom-button";
         public static final String LABEL = "custom-label";
         public static final String FONT = "custom-font";
+        public static final String FONT_FNT = "com/badlogic/gdx/utils/lsans-15.fnt";
     }
 
     public static class Background {

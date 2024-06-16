@@ -32,6 +32,9 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
+
+        Gdx.graphics.setWindowedMode(Constants.General.WIDTH, Constants.General.HEIGHT);
+
         configManager = ConfigurationManager.getInstance();
         assetManager = MyAssetManager.getInstance();
         audioManager = AudioManager.getInstance();
@@ -86,6 +89,8 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height) {
+        width = Constants.General.WIDTH;
+        height = Constants.General.HEIGHT;
         screenManager.resize(width, height);
     }
 

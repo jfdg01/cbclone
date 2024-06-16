@@ -2,6 +2,7 @@ package com.kandclay.managers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
+import com.kandclay.utils.Constants;
 
 public class ConfigurationManager {
     private static ConfigurationManager instance;
@@ -10,6 +11,14 @@ public class ConfigurationManager {
     // Private constructor to prevent instantiation
     private ConfigurationManager() {
         preferences = Gdx.app.getPreferences("config");
+//        if (!preferences.contains("width")) {
+//            preferences.putInteger("width", Constants.General.WIDTH);
+//            preferences.flush();
+//        }
+//        if (!preferences.contains("height")) {
+//            preferences.putInteger("height", Constants.General.HEIGHT);
+//            preferences.flush();
+//        }
     }
 
     // Thread-safe method to get the singleton instance

@@ -11,11 +11,9 @@ public class ConfigurationScreen extends BaseScreen {
     private Slider volumeSlider;
     private TextButton backButton;
     private TextButton hairColorButton;
-    private TextButton heightButton;
     private TextButton coinColorButton;
 
     private Constants.HairColor currentHairColor;
-    private Constants.Height currentHeight;
     private boolean isYellowCoin;
 
     public ConfigurationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
@@ -32,11 +30,9 @@ public class ConfigurationScreen extends BaseScreen {
         // Load preferences
         float savedVolume = configManager.getPreference("volume", Constants.Audio.DEFAULT_VOLUME);
         String savedHairColor = configManager.getPreference("hairColor", Constants.HairColor.BLONDE.toString());
-        String savedHeight = configManager.getPreference("height", Constants.Height.AVERAGE.toString());
         isYellowCoin = configManager.getPreference("coinColor", true); // Default to yellow coin
 
         currentHairColor = Constants.HairColor.valueOf(savedHairColor);
-        currentHeight = Constants.Height.valueOf(savedHeight);
 
         // Create a slider for volume control
         volumeSlider = new Slider(0, 1, 0.01f, false, skin);
@@ -70,16 +66,6 @@ public class ConfigurationScreen extends BaseScreen {
             }
         });
 
-        heightButton = new TextButton("Height: " + currentHeight, skin,  Constants.Font.BUTTON);
-        heightButton.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                currentHeight = currentHeight.next();
-                heightButton.setText("Height: " + currentHeight);
-                configManager.setPreference("height", currentHeight.toString()); // Save height preference
-            }
-        });
-
         coinColorButton = new TextButton("Coin Color: " + (isYellowCoin ? "Yellow" : "Red"), skin,  Constants.Font.BUTTON);
         coinColorButton.addListener(new ChangeListener() {
             @Override
@@ -98,7 +84,6 @@ public class ConfigurationScreen extends BaseScreen {
         table.add(new Label("Volume", skin, Constants.Font.LABEL)).padBottom(Constants.Buttons.PADDING).row();
         table.add(volumeSlider).width(Constants.Buttons.SLIDER_WIDTH).padBottom(Constants.Buttons.PADDING).row();
         table.add(hairColorButton).width(Constants.Buttons.CONTROL_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.Buttons.PADDING).row();
-        table.add(heightButton).width(Constants.Buttons.CONTROL_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.Buttons.PADDING).row();
         table.add(coinColorButton).width(Constants.Buttons.CONTROL_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.Buttons.PADDING).row();
         table.add(backButton).width(Constants.Buttons.BACK_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).padTop(Constants.Buttons.PADDING);
 

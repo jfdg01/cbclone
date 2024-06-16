@@ -1,6 +1,13 @@
 package com.kandclay.utils;
 
 public class Constants {
+
+    public static class General {
+        public static final int WIDTH = 800;
+        public static final int HEIGHT = 600;
+        public static final String TITLE = "K and Clay";
+    }
+
     public static class Animation {
         public static final int NUM_COLS = 28; // Number of columns in the sprite sheet
         public static final int NUM_ROWS = 28; // Number of rows in the sprite sheet
