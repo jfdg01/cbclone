@@ -14,6 +14,9 @@ import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainMenuScreen extends BaseScreen {
 
     private SkeletonRenderer renderer;
@@ -21,9 +24,7 @@ public class MainMenuScreen extends BaseScreen {
     private AnimationState state;
     private BitmapFont font;
     private float speedMultiplier = 1f;
-    private boolean isPlayHovered = false;
-    private boolean isQuitHovered = false;
-    private boolean isSettingsHovered = false;
+    private Map<String, Boolean> hoverStates;
     private Texture backgroundTexture;
     private ShapeRenderer shapeRenderer;
 
@@ -43,6 +44,11 @@ public class MainMenuScreen extends BaseScreen {
         font = new BitmapFont();
         backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class);
         shapeRenderer = new ShapeRenderer();
+
+        hoverStates = new HashMap<String, Boolean>();
+        hoverStates.put(Constants.MainMenu.BUTTON_PLAY, false);
+        hoverStates.put(Constants.MainMenu.BUTTON_QUIT, false);
+        hoverStates.put(Constants.MainMenu.BUTTON_SETTINGS, false);
 
         stage.addListener(new InputListener() {
             @Override
@@ -72,49 +78,30 @@ public class MainMenuScreen extends BaseScreen {
     }
 
     private void handleHover(float x, float y) {
-        if (isHoveringButton(x, y, "play")) {
-            if (!isPlayHovered) {
-                state.setAnimation(1, "Buttons/PlayHoverIn", false);
-                isPlayHovered = true;
-            }
-        } else {
-            if (isPlayHovered) {
-                state.setAnimation(1, "Buttons/PlayHoverOut", false);
-                isPlayHovered = false;
-            }
+        updateHoverState(x, y, Constants.MainMenu.BUTTON_PLAY, 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
+        updateHoverState(x, y, Constants.MainMenu.BUTTON_QUIT, 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
+        updateHoverState(x, y, Constants.MainMenu.BUTTON_SETTINGS, 3, "Buttons/SettingsHoverIn", "Buttons/SettingsHoverOut");
+    }
+
+    private void updateHoverState(float x, float y, String buttonName, int trackIndex, String hoverInAnim, String hoverOutAnim) {
+        boolean isHovered = isHoveringButton(x, y, buttonName);
+        boolean wasHovered = hoverStates.get(buttonName);
+
+        if (isHovered && !wasHovered) {
+            state.setAnimation(trackIndex, hoverInAnim, false);
+        } else if (!isHovered && wasHovered) {
+            state.setAnimation(trackIndex, hoverOutAnim, false);
         }
 
-        if (isHoveringButton(x, y, "quit")) {
-            if (!isQuitHovered) {
-                state.setAnimation(2, "Buttons/QuitHoverIn", false);
-                isQuitHovered = true;
-            }
-        } else {
-            if (isQuitHovered) {
-                state.setAnimation(2, "Buttons/QuitHoverOut", false);
-                isQuitHovered = false;
-            }
-        }
-
-        if (isHoveringButton(x, y, "settings")) {
-            if (!isSettingsHovered) {
-                state.setAnimation(3, "Buttons/SettingsHoverIn", false);
-                isSettingsHovered = true;
-            }
-        } else {
-            if (isSettingsHovered) {
-                state.setAnimation(3, "Buttons/SettingsHoverOut", false);
-                isSettingsHovered = false;
-            }
-        }
+        hoverStates.put(buttonName, isHovered);
     }
 
     private void handleClick(float x, float y) {
-        if (isHoveringButton(x, y, "play")) {
+        if (isHoveringButton(x, y, Constants.MainMenu.BUTTON_PLAY)) {
             screenManager.setScreen(Constants.ScreenType.GAME);
-        } else if (isHoveringButton(x, y, "quit")) {
+        } else if (isHoveringButton(x, y, Constants.MainMenu.BUTTON_QUIT)) {
             Gdx.app.exit();
-        } else if (isHoveringButton(x, y, "settings")) {
+        } else if (isHoveringButton(x, y, Constants.MainMenu.BUTTON_SETTINGS)) {
             screenManager.setScreen(Constants.ScreenType.OPTIONS);
         }
     }
@@ -173,13 +160,16 @@ public class MainMenuScreen extends BaseScreen {
 
         setSkeletonPosition();
 
-        // Draw debug rectangles
+        //renderDebug();
+    }
+
+    private void renderDebug() {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.RED);
-        drawDebugBounds("play");
-        drawDebugBounds("quit");
-        drawDebugBounds("settings");
+        drawDebugBounds(Constants.MainMenu.BUTTON_PLAY);
+        drawDebugBounds(Constants.MainMenu.BUTTON_QUIT);
+        drawDebugBounds(Constants.MainMenu.BUTTON_SETTINGS);
         shapeRenderer.end();
     }
 

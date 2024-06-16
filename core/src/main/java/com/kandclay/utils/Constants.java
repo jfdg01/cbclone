@@ -2,6 +2,38 @@ package com.kandclay.utils;
 
 public class Constants {
 
+    public enum ScreenType {
+        MENU,
+        GAME,
+        OPTIONS,
+    }
+
+    public enum GameState {
+        RUNNING,
+        PAUSED,
+        GAME_OVER
+    }
+
+    public enum HairColor {
+        BLONDE, BRUNETTE, REDHEAD;
+
+        private static final HairColor[] vals = values();
+
+        public HairColor next() {
+            return vals[(this.ordinal() + 1) % vals.length];
+        }
+    }
+
+    public enum Height {
+        SHORT, AVERAGE, TALL;
+
+        private static final Height[] vals = values();
+
+        public Height next() {
+            return vals[(this.ordinal() + 1) % vals.length];
+        }
+    }
+
     public static class General {
         public static final int WIDTH = 800;
         public static final int HEIGHT = 600;
@@ -53,6 +85,9 @@ public class Constants {
     public static class MainMenu {
         public static final String ATLAS = "spine/menu.atlas";
         public static final String JSON = "spine/menu.json";
+        public static final String BUTTON_PLAY = "play";
+        public static final String BUTTON_QUIT = "quit";
+        public static final String BUTTON_SETTINGS = "settings";
     }
 
     public static class CursorTrail {
@@ -78,36 +113,6 @@ public class Constants {
 
     public static class Sounds {
         public static final String OOF = "sounds/sound.ogg";
-    }
-
-    public enum ScreenType {
-        MENU,
-        GAME,
-        OPTIONS,
-    }
-
-    public enum GameState {
-        RUNNING,
-        PAUSED,
-        GAME_OVER;
-    }
-
-    public enum HairColor {
-        BLONDE, BRUNETTE, REDHEAD;
-
-        private static HairColor[] vals = values();
-        public HairColor next() {
-            return vals[(this.ordinal() + 1) % vals.length];
-        }
-    }
-
-    public enum Height {
-        SHORT, AVERAGE, TALL;
-
-        private static Height[] vals = values();
-        public Height next() {
-            return vals[(this.ordinal() + 1) % vals.length];
-        }
     }
 
     public static class Font {
