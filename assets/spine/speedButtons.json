@@ -1,0 +1,265 @@
+{
+  "skeleton": {
+    "hash": "fcn/04H1RvlD0q24V1r29b3jszU",
+    "spine": "3.8.75",
+    "x": 60,
+    "y": -1676,
+    "width": 512,
+    "height": 1616,
+    "images": "",
+    "audio": ""
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "1x",
+      "parent": "root",
+      "x": 316,
+      "y": -316
+    },
+    {
+      "name": "2x",
+      "parent": "root",
+      "x": 316,
+      "y": -868
+    },
+    {
+      "name": "3x",
+      "parent": "root",
+      "x": 316,
+      "y": -1420
+    }
+  ],
+  "slots": [
+    {
+      "name": "shadow-3x",
+      "bone": "3x",
+      "attachment": "shadow"
+    },
+    {
+      "name": "shadow-2x",
+      "bone": "2x",
+      "attachment": "shadow"
+    },
+    {
+      "name": "shadow-1x",
+      "bone": "1x",
+      "attachment": "shadow"
+    },
+    {
+      "name": "bg-3x",
+      "bone": "3x",
+      "attachment": "bg"
+    },
+    {
+      "name": "bg-2x",
+      "bone": "2x",
+      "attachment": "bg"
+    },
+    {
+      "name": "bg-1x",
+      "bone": "1x",
+      "attachment": "bg"
+    },
+    {
+      "name": "3x",
+      "bone": "3x",
+      "attachment": "3x"
+    },
+    {
+      "name": "2x",
+      "bone": "2x",
+      "attachment": "2x"
+    },
+    {
+      "name": "1x",
+      "bone": "1x",
+      "attachment": "1x"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "2x": {
+          "2x": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        "bg-2x": {
+          "bg": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        "shadow-2x": {
+          "shadow": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        "3x": {
+          "3x": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        "1x": {
+          "1x": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        "bg-3x": {
+          "bg": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        "bg-1x": {
+          "bg": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        "shadow-3x": {
+          "shadow": {
+            "width": 512,
+            "height": 512
+          }
+        },
+        "shadow-1x": {
+          "shadow": {
+            "width": 512,
+            "height": 512
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "2x/hoverIn": {
+      "bones": {
+        "2x": {
+          "scale": [
+            {},
+            {
+              "time": 0.1667,
+              "x": 1.2,
+              "y": 1.2
+            }
+          ]
+        }
+      }
+    },
+    "1x/hoverIn": {
+      "bones": {
+        "1x": {
+          "scale": [
+            {},
+            {
+              "time": 0.1667,
+              "x": 1.2,
+              "y": 1.2
+            }
+          ]
+        }
+      }
+    },
+    "3x/hoverIn": {
+      "bones": {
+        "3x": {
+          "scale": [
+            {},
+            {
+              "time": 0.0333,
+              "x": 1.2,
+              "y": 1.2
+            }
+          ]
+        }
+      }
+    },
+    "3x/hoverOut": {
+      "bones": {
+        "3x": {
+          "scale": [
+            {
+              "x": 1.2,
+              "y": 1.2
+            },
+            {
+              "time": 0.0333
+            }
+          ]
+        }
+      }
+    },
+    "2x/hoverOut": {
+      "bones": {
+        "2x": {
+          "scale": [
+            {
+              "x": 1.2,
+              "y": 1.2
+            },
+            {
+              "time": 0.1667
+            }
+          ]
+        }
+      }
+    },
+    "1x/hoverOut": {
+      "bones": {
+        "1x": {
+          "scale": [
+            {
+              "x": 1.2,
+              "y": 1.2
+            },
+            {
+              "time": 0.1667
+            }
+          ]
+        }
+      }
+    },
+    "1x/pressed": {
+      "slots": {
+        "bg-1x": {
+          "color": [
+            {
+              "color": "ff92f9ff"
+            }
+          ]
+        }
+      }
+    },
+    "2x/pressed": {
+      "slots": {
+        "bg-2x": {
+          "color": [
+            {
+              "color": "ff92f8ff"
+            }
+          ]
+        }
+      }
+    },
+    "3x/pressed": {
+      "slots": {
+        "bg-3x": {
+          "color": [
+            {
+              "color": "ff92f8ff"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

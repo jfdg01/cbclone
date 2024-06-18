@@ -58,6 +58,7 @@ public class Main extends ApplicationAdapter {
         assetManager.load(Constants.Coin.Yellow.ATLAS, TextureAtlas.class);
         assetManager.load(Constants.Coin.Red.ATLAS, TextureAtlas.class);
         assetManager.load(Constants.Background.PATH, Texture.class);
+        assetManager.load(Constants.MainAnimation.ATLAS, TextureAtlas.class);
 
         // Load bitmap font
         assetManager.load(Constants.Font.FONT_FNT, BitmapFont.class);

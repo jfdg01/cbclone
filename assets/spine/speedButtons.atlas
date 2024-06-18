@@ -1,0 +1,41 @@
+
+speedButtons.png
+size: 1620,504
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1x
+  rotate: false
+  xy: 1005, 263
+  size: 372, 239
+  orig: 512, 512
+  offset: 64, 137
+  index: -1
+2x
+  rotate: true
+  xy: 1379, 131
+  size: 371, 239
+  orig: 512, 512
+  offset: 64, 137
+  index: -1
+3x
+  rotate: false
+  xy: 1005, 22
+  size: 372, 239
+  orig: 512, 512
+  offset: 62, 137
+  index: -1
+bg
+  rotate: false
+  xy: 504, 3
+  size: 499, 499
+  orig: 512, 512
+  offset: 0, 13
+  index: -1
+shadow
+  rotate: false
+  xy: 2, 2
+  size: 500, 500
+  orig: 512, 512
+  offset: 12, 0
+  index: -1

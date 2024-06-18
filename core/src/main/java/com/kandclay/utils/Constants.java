@@ -61,6 +61,14 @@ public class Constants {
         public static final int CONTROL_BUTTON_WIDTH = 300;
     }
 
+    public static class MainAnimation {
+        public static final String BUTTON_1X = "1x";
+        public static final String BUTTON_2X = "2x";
+        public static final String BUTTON_3X = "3x";
+        public static final String ATLAS = "spine/speedButtons.atlas";
+        public static final String JSON = "spine/speedButtons.json";
+    }
+
     public static class Audio {
         public static final float DEFAULT_VOLUME = 1f;
     }
