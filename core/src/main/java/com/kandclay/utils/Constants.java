@@ -124,8 +124,6 @@ public class Constants {
     }
 
     public static class Background {
-        public static final String PATH = "background.jpg";
+        public static final String PATH = "background.png";
     }
 }
-
-
