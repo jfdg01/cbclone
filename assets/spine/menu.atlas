@@ -1,40 +1,40 @@
 
 menu.png
-size: 1138,1018
+size: 1656,1009
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
 leaves
-  rotate: true
-  xy: 2, 2
+  rotate: false
+  xy: 2, 159
   size: 1014, 501
   orig: 1042, 522
   offset: 17, 3
   index: -1
 logo
-  rotate: true
-  xy: 662, 117
-  size: 899, 306
-  orig: 917, 323
-  offset: 9, 9
+  rotate: false
+  xy: 2, 662
+  size: 1652, 345
+  orig: 1654, 347
+  offset: 1, 1
   index: -1
 play
-  rotate: true
-  xy: 970, 42
+  rotate: false
+  xy: 1018, 342
   size: 489, 150
   orig: 489, 150
   offset: 0, 0
   index: -1
 quit
-  rotate: true
-  xy: 970, 533
+  rotate: false
+  xy: 1018, 494
   size: 483, 166
   orig: 483, 166
   offset: 0, 0
   index: -1
 settings
-  rotate: true
-  xy: 505, 23
+  rotate: false
+  xy: 2, 2
   size: 993, 155
   orig: 993, 155
   offset: 0, 0
