@@ -251,7 +251,7 @@ public class MainAnimationScreen extends BaseScreen {
     }
 
     private Rectangle getButtonBounds(String buttonName) {
-        String bgSlotName = "bg-" + buttonName;  // Update to use bg-1x, bg-2x, bg-3x
+        String bgSlotName = "bg-" + buttonName;
         Bone bone = buttonSkeleton.findBone(buttonName);
         if (bone == null) return new Rectangle();
 
@@ -355,7 +355,7 @@ public class MainAnimationScreen extends BaseScreen {
 
     private void setButtonSkeletonScale() {
         if (buttonSkeleton != null) {
-            float scale = 0.1f; // Adjust the scale as needed
+            float scale = 0.2f; // Adjust the scale as needed
             buttonSkeleton.setScale(scale, scale);
         }
     }
