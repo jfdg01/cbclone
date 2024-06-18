@@ -1,6 +1,6 @@
 
 menu.png
-size: 892,1018
+size: 1138,1018
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
@@ -13,29 +13,29 @@ leaves
   index: -1
 logo
   rotate: true
-  xy: 505, 117
+  xy: 662, 117
   size: 899, 306
   orig: 917, 323
   offset: 9, 9
   index: -1
 play
-  rotate: false
-  xy: 505, 38
-  size: 218, 77
-  orig: 218, 77
+  rotate: true
+  xy: 970, 42
+  size: 489, 150
+  orig: 489, 150
   offset: 0, 0
   index: -1
 quit
   rotate: true
-  xy: 813, 352
-  size: 216, 77
-  orig: 216, 77
+  xy: 970, 533
+  size: 483, 166
+  orig: 483, 166
   offset: 0, 0
   index: -1
 settings
   rotate: true
-  xy: 813, 570
-  size: 446, 76
-  orig: 446, 76
+  xy: 505, 23
+  size: 993, 155
+  orig: 993, 155
   offset: 0, 0
   index: -1
