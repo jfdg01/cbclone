@@ -68,7 +68,6 @@ public class MainMenuScreen extends BaseScreen {
         });
     }
 
-    // Initialize animations and other setup
     private void initializeAnimations() {
         String atlasPath = Constants.MainMenu.ATLAS;
         String skeletonPath = Constants.MainMenu.JSON;
@@ -80,23 +79,18 @@ public class MainMenuScreen extends BaseScreen {
         setSkeletonPosition();
         state.setAnimation(0, "animation", false);
 
-        // Listen for the end of the initial animation
         state.addListener(new AnimationState.AnimationStateListener() {
             @Override
-            public void start(AnimationState.TrackEntry entry) {
-            }
+            public void start(AnimationState.TrackEntry entry) {}
 
             @Override
-            public void interrupt(AnimationState.TrackEntry entry) {
-            }
+            public void interrupt(AnimationState.TrackEntry entry) {}
 
             @Override
-            public void end(AnimationState.TrackEntry entry) {
-            }
+            public void end(AnimationState.TrackEntry entry) {}
 
             @Override
-            public void dispose(AnimationState.TrackEntry entry) {
-            }
+            public void dispose(AnimationState.TrackEntry entry) {}
 
             @Override
             public void complete(AnimationState.TrackEntry entry) {
@@ -106,12 +100,10 @@ public class MainMenuScreen extends BaseScreen {
             }
 
             @Override
-            public void event(AnimationState.TrackEntry entry, Event event) {
-            }
+            public void event(AnimationState.TrackEntry entry, Event event) {}
         });
     }
 
-    // Handle hover states for buttons
     private void handleHover(float x, float y) {
         updateHoverState(x, y, Constants.MainMenu.BUTTON_PLAY, 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
         updateHoverState(x, y, Constants.MainMenu.BUTTON_QUIT, 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
@@ -133,12 +125,48 @@ public class MainMenuScreen extends BaseScreen {
 
     private void handleClick(float x, float y) {
         if (isHoveringButton(x, y, Constants.MainMenu.BUTTON_PLAY)) {
-            screenManager.setScreen(Constants.ScreenType.GAME);
+            playButtonPressAnimation(Constants.MainMenu.BUTTON_PLAY, "Buttons/PlayPress", Constants.ScreenType.GAME);
         } else if (isHoveringButton(x, y, Constants.MainMenu.BUTTON_QUIT)) {
-            Gdx.app.exit();
+            playButtonPressAnimation(Constants.MainMenu.BUTTON_QUIT, "Buttons/QuitPress", null);
         } else if (isHoveringButton(x, y, Constants.MainMenu.BUTTON_SETTINGS)) {
-            screenManager.setScreen(Constants.ScreenType.OPTIONS);
+            playButtonPressAnimation(Constants.MainMenu.BUTTON_SETTINGS, "Buttons/SettingsPress", Constants.ScreenType.OPTIONS);
         }
+    }
+
+    private void playButtonPressAnimation(String buttonName, final String animationName, final Constants.ScreenType screenType) {
+        Gdx.app.log("MainMenuScreen", "Playing button press animation: " + animationName);
+        state.setAnimation(4, animationName, false).setListener(new AnimationState.AnimationStateListener() {
+            @Override
+            public void start(AnimationState.TrackEntry entry) {}
+
+            @Override
+            public void interrupt(AnimationState.TrackEntry entry) {}
+
+            @Override
+            public void end(AnimationState.TrackEntry entry) {}
+
+            @Override
+            public void dispose(AnimationState.TrackEntry entry) {}
+
+            @Override
+            public void complete(AnimationState.TrackEntry entry) {
+                Gdx.app.log("MainMenuScreen", "Animation complete: " + animationName);
+                if (screenType != null) {
+                    Gdx.app.postRunnable(new Runnable() {
+                        @Override
+                        public void run() {
+                            Gdx.app.log("MainMenuScreen", "Changing screen to: " + screenType);
+                            screenManager.setScreen(screenType);
+                        }
+                    });
+                } else {
+                    Gdx.app.exit();
+                }
+            }
+
+            @Override
+            public void event(AnimationState.TrackEntry entry, Event event) {}
+        });
     }
 
     private boolean isHoveringButton(float x, float y, String buttonName) {
@@ -156,11 +184,9 @@ public class MainMenuScreen extends BaseScreen {
         RegionAttachment attachment = (RegionAttachment) slot.getAttachment();
         if (attachment == null) return new Rectangle();
 
-        // Calculate the world position and dimensions of the button
         float[] vertices = new float[8];
         attachment.computeWorldVertices(slot.getBone(), vertices, 0, 2);
 
-        // Calculate bounds based on the vertices
         float minX = vertices[0];
         float minY = vertices[1];
         float maxX = vertices[0];
@@ -187,15 +213,12 @@ public class MainMenuScreen extends BaseScreen {
         viewport.apply();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        // Draw the background
         batch.draw(backgroundTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         renderer.draw(batch, skeleton);
         super.renderTrail(delta);
         batch.end();
 
         setSkeletonPosition();
-
-        //renderDebug();
     }
 
     private void renderDebug() {
@@ -241,7 +264,6 @@ public class MainMenuScreen extends BaseScreen {
     public void dispose() {
         super.dispose();
         font.dispose();
-        // Do not dispose of backgroundTexture here if it's shared
         shapeRenderer.dispose();
     }
 }
