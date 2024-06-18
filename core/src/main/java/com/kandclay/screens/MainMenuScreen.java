@@ -27,6 +27,7 @@ public class MainMenuScreen extends BaseScreen {
     private Map<String, Boolean> hoverStates;
     private Texture backgroundTexture;
     private ShapeRenderer shapeRenderer;
+    private boolean isInitialAnimationFinished = false;
 
     public MainMenuScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -53,7 +54,9 @@ public class MainMenuScreen extends BaseScreen {
         stage.addListener(new InputListener() {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
-                handleHover(x, y);
+                if (isInitialAnimationFinished) {
+                    handleHover(x, y);
+                }
                 return true;
             }
 
@@ -76,6 +79,36 @@ public class MainMenuScreen extends BaseScreen {
         setSkeletonScale();
         setSkeletonPosition();
         state.setAnimation(0, "animation", false);
+
+        // Listen for the end of the initial animation
+        state.addListener(new AnimationState.AnimationStateListener() {
+            @Override
+            public void start(AnimationState.TrackEntry entry) {
+            }
+
+            @Override
+            public void interrupt(AnimationState.TrackEntry entry) {
+            }
+
+            @Override
+            public void end(AnimationState.TrackEntry entry) {
+            }
+
+            @Override
+            public void dispose(AnimationState.TrackEntry entry) {
+            }
+
+            @Override
+            public void complete(AnimationState.TrackEntry entry) {
+                if (entry.getAnimation().getName().equals("animation")) {
+                    isInitialAnimationFinished = true;
+                }
+            }
+
+            @Override
+            public void event(AnimationState.TrackEntry entry, Event event) {
+            }
+        });
     }
 
     // Handle hover states for buttons
