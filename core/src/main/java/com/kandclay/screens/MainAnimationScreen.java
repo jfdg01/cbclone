@@ -251,10 +251,11 @@ public class MainAnimationScreen extends BaseScreen {
     }
 
     private Rectangle getButtonBounds(String buttonName) {
+        String bgSlotName = "bg-" + buttonName;  // Update to use bg-1x, bg-2x, bg-3x
         Bone bone = buttonSkeleton.findBone(buttonName);
         if (bone == null) return new Rectangle();
 
-        Slot slot = buttonSkeleton.findSlot(buttonName);
+        Slot slot = buttonSkeleton.findSlot(bgSlotName);  // Use the background slot
         if (slot == null || !(slot.getAttachment() instanceof RegionAttachment)) return new Rectangle();
 
         RegionAttachment attachment = (RegionAttachment) slot.getAttachment();
