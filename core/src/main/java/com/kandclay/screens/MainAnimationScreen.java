@@ -34,13 +34,14 @@ public class MainAnimationScreen extends BaseScreen {
     private TextButton backButton;
     private Slider slider;
     private TextButton modeButton;
-    private TextButton changeColorButton;
+    private TextButton changeCoinColorButton;
     private boolean isLooping = true;
     private float speedMultiplier = 1f;
     private float lastSliderValue = 0f;
     private HashMap<String, Boolean> hoverStates;
     private ShapeRenderer shapeRenderer;
     private Texture backgroundTexture;
+    private TextButton swapSkinsButton;  // New button to swap skins
 
     public MainAnimationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -102,11 +103,19 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        changeColorButton = new TextButton("Change Coin Color", skin, Constants.Font.BUTTON);
-        changeColorButton.addListener(new ChangeListener() {
+        changeCoinColorButton = new TextButton("Change Coin Color", skin, Constants.Font.BUTTON);
+        changeCoinColorButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 toggleCoinColor();
+            }
+        });
+
+        swapSkinsButton = new TextButton("Swap Skins", skin, Constants.Font.BUTTON);
+        swapSkinsButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                swapSkins();
             }
         });
 
@@ -125,7 +134,9 @@ public class MainAnimationScreen extends BaseScreen {
         Table topTable = new Table();
         topTable.setFillParent(true);
         topTable.top();
-        topTable.add(changeColorButton).pad(Constants.UIButtons.PADDING);
+        topTable.add(changeCoinColorButton).pad(Constants.UIButtons.PADDING);
+        topTable.row();
+        topTable.add(swapSkinsButton).pad(Constants.UIButtons.PADDING);  // Add the new button to the layout
 
         stage.addActor(bottomTable);
         stage.addActor(backButtonTable);
@@ -212,14 +223,18 @@ public class MainAnimationScreen extends BaseScreen {
         hoverStates.put(buttonName, isHovered);
     }
 
+    private void swapSkins() {
+        String currentSkin = buttonSkeleton.getSkin().getName();
+        String newSkin = currentSkin.equals("Saturated") ? "Accessible" : "Saturated";
+        buttonSkeleton.setSkin(newSkin);
+    }
+
     private void handleClick(float x, float y) {
         if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_1X_NAME)) {
             playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_1X_NAME, "1x/pressed", 1f);
         } else if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_2X_NAME)) {
-            buttonSkeleton.setSkin("Accessible");
             playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_2X_NAME, "2x/pressed", 2f);
         } else if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_3X__NAME)) {
-            buttonSkeleton.setSkin("Saturated");
             playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_3X__NAME, "3x/pressed", 3f);
         }
     }
