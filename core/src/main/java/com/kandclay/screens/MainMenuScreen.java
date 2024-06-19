@@ -1,6 +1,7 @@
 package com.kandclay.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -28,14 +29,18 @@ public class MainMenuScreen extends BaseScreen {
     private Texture backgroundTexture;
     private ShapeRenderer shapeRenderer;
     private boolean isInitialAnimationFinished = false;
+    private InnerScreen innerScreen;
+
 
     public MainMenuScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
+        innerScreen = new InnerScreen(spineAnimationHandler, screenManager);
     }
 
     @Override
     public void show() {
         super.show();
+        innerScreen.show();
 
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
@@ -66,6 +71,11 @@ public class MainMenuScreen extends BaseScreen {
                 return true;
             }
         });
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(innerScreen.stage);
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     private void initializeAnimations() {
@@ -228,6 +238,10 @@ public class MainMenuScreen extends BaseScreen {
         super.renderTrail(delta);
         batch.end();
 
+        innerScreen.render(delta);
+        stage.act(delta);
+        stage.draw();
+
 //        setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
 //        Gdx.app.log("MainMenuScreen", "Render: Skeleton position x=" + skeleton.getX() + " y=" + skeleton.getY());
     }
@@ -252,6 +266,7 @@ public class MainMenuScreen extends BaseScreen {
         super.resize(width, height);
         setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
         setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+        innerScreen.resize(width, height);
     }
 
     @Override
@@ -259,5 +274,6 @@ public class MainMenuScreen extends BaseScreen {
         super.dispose();
         font.dispose();
         shapeRenderer.dispose();
+        innerScreen.dispose();
     }
 }
