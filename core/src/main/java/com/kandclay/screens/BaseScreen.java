@@ -65,7 +65,7 @@ public abstract class BaseScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
-        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        // resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     public void clearScreen() {
@@ -101,6 +101,11 @@ public abstract class BaseScreen implements Screen {
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         stage.getViewport().update(width, height, true);
         viewport.update(width, height);  // Update the viewport
+        Gdx.app.log("BaseScreen", "Resize: width=" + width + " height=" + height);
+        Gdx.app.log("BaseScreen", "Camera position: x=" + camera.position.x + " y=" + camera.position.y);
+        Gdx.app.log("BaseScreen", "Viewport: worldWidth=" + viewport.getWorldWidth() + " worldHeight=" + viewport.getWorldHeight() + " screenWidth=" + viewport.getScreenWidth() + " screenHeight=" + viewport.getScreenHeight());
+        Gdx.app.log("BaseScreen", "Stage: width=" + stage.getWidth() + " height=" + stage.getHeight());
+        Gdx.app.log("BaseScreen", "---------------------");
     }
 
     @Override
@@ -172,7 +177,7 @@ public abstract class BaseScreen implements Screen {
 
     protected void setSkeletonScale(Skeleton skeleton, float widthPercentage, float heightPercentage) {
         if (skeleton != null) {
-            float screenWidth = viewport.getScreenWidth();
+            float screenWidth = viewport.getWorldWidth();
             float screenHeight = viewport.getWorldHeight();
 
             float skeletonWidth = screenWidth * widthPercentage;
@@ -184,12 +189,14 @@ public abstract class BaseScreen implements Screen {
             float scale = Math.min(scaleX, scaleY);
 
             skeleton.setScale(scale, scale);
+            Gdx.app.log("BaseScreen", skeleton.getData().getName() + " skeleton scale set to " + scale);
         }
     }
 
     protected void setSkeletonPosition(Skeleton skeleton, float x, float y) {
         if (skeleton != null) {
             skeleton.setPosition(x, y);
+            Gdx.app.log("BaseScreen", skeleton.getData().getName() + " skeleton position set to x=" + x + " y=" + y);
         }
     }
 }

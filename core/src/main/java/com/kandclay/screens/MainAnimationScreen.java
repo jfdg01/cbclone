@@ -177,7 +177,7 @@ public class MainAnimationScreen extends BaseScreen {
 
             @Override
             public void complete(AnimationState.TrackEntry entry) {
-                System.out.println("Animation completed");
+                // System.out.println("Animation completed");
             }
         });
     }

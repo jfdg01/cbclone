@@ -81,16 +81,20 @@ public class MainMenuScreen extends BaseScreen {
 
         state.addListener(new AnimationState.AnimationStateListener() {
             @Override
-            public void start(AnimationState.TrackEntry entry) {}
+            public void start(AnimationState.TrackEntry entry) {
+            }
 
             @Override
-            public void interrupt(AnimationState.TrackEntry entry) {}
+            public void interrupt(AnimationState.TrackEntry entry) {
+            }
 
             @Override
-            public void end(AnimationState.TrackEntry entry) {}
+            public void end(AnimationState.TrackEntry entry) {
+            }
 
             @Override
-            public void dispose(AnimationState.TrackEntry entry) {}
+            public void dispose(AnimationState.TrackEntry entry) {
+            }
 
             @Override
             public void complete(AnimationState.TrackEntry entry) {
@@ -100,7 +104,8 @@ public class MainMenuScreen extends BaseScreen {
             }
 
             @Override
-            public void event(AnimationState.TrackEntry entry, Event event) {}
+            public void event(AnimationState.TrackEntry entry, Event event) {
+            }
         });
     }
 
@@ -137,16 +142,20 @@ public class MainMenuScreen extends BaseScreen {
         Gdx.app.log("MainMenuScreen", "Playing button press animation: " + animationName);
         state.setAnimation(4, animationName, false).setListener(new AnimationState.AnimationStateListener() {
             @Override
-            public void start(AnimationState.TrackEntry entry) {}
+            public void start(AnimationState.TrackEntry entry) {
+            }
 
             @Override
-            public void interrupt(AnimationState.TrackEntry entry) {}
+            public void interrupt(AnimationState.TrackEntry entry) {
+            }
 
             @Override
-            public void end(AnimationState.TrackEntry entry) {}
+            public void end(AnimationState.TrackEntry entry) {
+            }
 
             @Override
-            public void dispose(AnimationState.TrackEntry entry) {}
+            public void dispose(AnimationState.TrackEntry entry) {
+            }
 
             @Override
             public void complete(AnimationState.TrackEntry entry) {
@@ -165,7 +174,8 @@ public class MainMenuScreen extends BaseScreen {
             }
 
             @Override
-            public void event(AnimationState.TrackEntry entry, Event event) {}
+            public void event(AnimationState.TrackEntry entry, Event event) {
+            }
         });
     }
 
@@ -218,7 +228,8 @@ public class MainMenuScreen extends BaseScreen {
         super.renderTrail(delta);
         batch.end();
 
-        setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+//        setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+//        Gdx.app.log("MainMenuScreen", "Render: Skeleton position x=" + skeleton.getX() + " y=" + skeleton.getY());
     }
 
     private void renderDebug() {
@@ -239,7 +250,7 @@ public class MainMenuScreen extends BaseScreen {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        viewport.update(width, height, true);
+        // viewport.update(width, height, true);
         setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
         setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
     }
