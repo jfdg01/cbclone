@@ -110,28 +110,28 @@ public class MainAnimationScreen extends BaseScreen {
         Table bottomTable = new Table();
         bottomTable.setFillParent(true);
         bottomTable.bottom();
-        bottomTable.add(slider).width(Constants.Buttons.SLIDER_WIDTH).padBottom(Constants.Buttons.PADDING);
+        bottomTable.add(slider).width(Constants.UIButtons.SLIDER_WIDTH).padBottom(Constants.UIButtons.PADDING);
         bottomTable.row();
-        bottomTable.add(modeButton).padBottom(Constants.Buttons.PADDING);
+        bottomTable.add(modeButton).padBottom(Constants.UIButtons.PADDING);
 
         Table backButtonTable = new Table();
         backButtonTable.setFillParent(true);
         backButtonTable.bottom().left();
-        backButtonTable.add(backButton).width(Constants.Buttons.BACK_BUTTON_WIDTH).height(Constants.Buttons.CONTROL_BUTTON_HEIGHT).pad(Constants.Buttons.PADDING);
+        backButtonTable.add(backButton).width(Constants.UIButtons.BACK_BUTTON_WIDTH).height(Constants.UIButtons.CONTROL_BUTTON_HEIGHT).pad(Constants.UIButtons.PADDING);
 
         Table topTable = new Table();
         topTable.setFillParent(true);
         topTable.top();
-        topTable.add(changeColorButton).pad(Constants.Buttons.PADDING);
+        topTable.add(changeColorButton).pad(Constants.UIButtons.PADDING);
 
         stage.addActor(bottomTable);
         stage.addActor(backButtonTable);
         stage.addActor(topTable);
 
         hoverStates = new HashMap<String, Boolean>();
-        hoverStates.put(Constants.MainAnimation.BUTTON_1X, false);
-        hoverStates.put(Constants.MainAnimation.BUTTON_2X, false);
-        hoverStates.put(Constants.MainAnimation.BUTTON_3X, false);
+        hoverStates.put(Constants.MainAnimationScreen.BUTTON_1X_NAME, false);
+        hoverStates.put(Constants.MainAnimationScreen.BUTTON_2X_NAME, false);
+        hoverStates.put(Constants.MainAnimationScreen.BUTTON_3X__NAME, false);
 
         stage.addListener(new InputListener() {
             @Override
@@ -159,8 +159,8 @@ public class MainAnimationScreen extends BaseScreen {
     }
 
     private void initializeCoinAnimations(float stateTime) {
-        String atlasPath = isYellowCoin ? Constants.Coin.Yellow.ATLAS : Constants.Coin.Red.ATLAS;
-        String skeletonPath = isYellowCoin ? Constants.Coin.Yellow.JSON : Constants.Coin.Red.JSON;
+        String atlasPath = isYellowCoin ? Constants.MainAnimationScreen.YellowCoin.ATLAS : Constants.MainAnimationScreen.RedCoin.ATLAS;
+        String skeletonPath = isYellowCoin ? Constants.MainAnimationScreen.YellowCoin.JSON : Constants.MainAnimationScreen.RedCoin.JSON;
         coinSkeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
         coinState = spineAnimationHandler.createAnimationState(coinSkeleton);
 
@@ -183,8 +183,8 @@ public class MainAnimationScreen extends BaseScreen {
     }
 
     private void initializeButtonAnimations() {
-        String atlasPath = Constants.MainAnimation.ATLAS;
-        String skeletonPath = Constants.MainAnimation.JSON;
+        String atlasPath = Constants.MainAnimationScreen.ATLAS;
+        String skeletonPath = Constants.MainAnimationScreen.JSON;
 
         buttonSkeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
         buttonState = spineAnimationHandler.createAnimationState(buttonSkeleton);
@@ -192,13 +192,13 @@ public class MainAnimationScreen extends BaseScreen {
         setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE,  Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
         setSkeletonPosition(buttonSkeleton, 0, viewport.getWorldHeight());
 
-        playButtonPressAnimation(Constants.MainAnimation.BUTTON_1X, "1x/pressed", 1f);
+        playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_1X_NAME, "1x/pressed", 1f);
     }
 
     private void handleHover(float x, float y) {
-        updateHoverState(x, y, Constants.MainAnimation.BUTTON_1X, 1, "1x/hoverIn", "1x/hoverOut");
-        updateHoverState(x, y, Constants.MainAnimation.BUTTON_2X, 2, "2x/hoverIn", "2x/hoverOut");
-        updateHoverState(x, y, Constants.MainAnimation.BUTTON_3X, 3, "3x/hoverIn", "3x/hoverOut");
+        updateHoverState(x, y, Constants.MainAnimationScreen.BUTTON_1X_NAME, 1, "1x/hoverIn", "1x/hoverOut");
+        updateHoverState(x, y, Constants.MainAnimationScreen.BUTTON_2X_NAME, 2, "2x/hoverIn", "2x/hoverOut");
+        updateHoverState(x, y, Constants.MainAnimationScreen.BUTTON_3X__NAME, 3, "3x/hoverIn", "3x/hoverOut");
     }
 
     private void updateHoverState(float x, float y, String buttonName, int trackIndex, String hoverInAnim, String hoverOutAnim) {
@@ -215,12 +215,12 @@ public class MainAnimationScreen extends BaseScreen {
     }
 
     private void handleClick(float x, float y) {
-        if (isHoveringButton(x, y, Constants.MainAnimation.BUTTON_1X)) {
-            playButtonPressAnimation(Constants.MainAnimation.BUTTON_1X, "1x/pressed", 1f);
-        } else if (isHoveringButton(x, y, Constants.MainAnimation.BUTTON_2X)) {
-            playButtonPressAnimation(Constants.MainAnimation.BUTTON_2X, "2x/pressed", 2f);
-        } else if (isHoveringButton(x, y, Constants.MainAnimation.BUTTON_3X)) {
-            playButtonPressAnimation(Constants.MainAnimation.BUTTON_3X, "3x/pressed", 3f);
+        if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_1X_NAME)) {
+            playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_1X_NAME, "1x/pressed", 1f);
+        } else if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_2X_NAME)) {
+            playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_2X_NAME, "2x/pressed", 2f);
+        } else if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_3X__NAME)) {
+            playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_3X__NAME, "3x/pressed", 3f);
         }
     }
 
@@ -327,9 +327,9 @@ public class MainAnimationScreen extends BaseScreen {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.RED);
-        drawDebugBounds(Constants.MainAnimation.BUTTON_1X);
-        drawDebugBounds(Constants.MainAnimation.BUTTON_2X);
-        drawDebugBounds(Constants.MainAnimation.BUTTON_3X);
+        drawDebugBounds(Constants.MainAnimationScreen.BUTTON_1X_NAME);
+        drawDebugBounds(Constants.MainAnimationScreen.BUTTON_2X_NAME);
+        drawDebugBounds(Constants.MainAnimationScreen.BUTTON_3X__NAME);
         shapeRenderer.end();
     }
 

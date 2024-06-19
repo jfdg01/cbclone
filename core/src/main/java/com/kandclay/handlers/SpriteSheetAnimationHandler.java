@@ -18,20 +18,20 @@ public class SpriteSheetAnimationHandler {
         String name = "sprites/anim/" + regionName + ".png";
         Texture texture = assetManager.get(name, Texture.class);
 
-        int frameWidth = texture.getWidth() / Constants.Animation.NUM_COLS;
-        int frameHeight = texture.getHeight() / Constants.Animation.NUM_ROWS;
+        int frameWidth = texture.getWidth() / Constants.SpriteAnimationSettings.NUM_COLS;
+        int frameHeight = texture.getHeight() / Constants.SpriteAnimationSettings.NUM_ROWS;
 
         TextureRegion[][] tmpFrames = TextureRegion.split(texture, frameWidth, frameHeight);
-        TextureRegion[] animationFrames = new TextureRegion[Constants.Animation.NUM_ROWS * Constants.Animation.NUM_COLS];
+        TextureRegion[] animationFrames = new TextureRegion[Constants.SpriteAnimationSettings.NUM_ROWS * Constants.SpriteAnimationSettings.NUM_COLS];
 
         int index = 0;
-        for (int i = 0; i < Constants.Animation.NUM_ROWS; i++) {
-            for (int j = 0; j < Constants.Animation.NUM_COLS; j++) {
+        for (int i = 0; i < Constants.SpriteAnimationSettings.NUM_ROWS; i++) {
+            for (int j = 0; j < Constants.SpriteAnimationSettings.NUM_COLS; j++) {
                 animationFrames[index++] = tmpFrames[i][j];
             }
         }
 
-        return new Animation<TextureRegion>(Constants.Animation.FRAME_DURATION, animationFrames);
+        return new Animation<TextureRegion>(Constants.SpriteAnimationSettings.FRAME_DURATION, animationFrames);
     }
 
     // Additional helper method to handle animations created by hand

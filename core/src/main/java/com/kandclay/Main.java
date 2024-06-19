@@ -54,11 +54,11 @@ public class Main extends ApplicationAdapter {
     private void loadInitialAssets() {
         assetManager.load(Constants.Skin.JSON, Skin.class);
         assetManager.load(Constants.MainMenuScreen.ATLAS, TextureAtlas.class);
-        assetManager.load(Constants.CursorTrail.ATLAS, TextureAtlas.class);
-        assetManager.load(Constants.Coin.Yellow.ATLAS, TextureAtlas.class);
-        assetManager.load(Constants.Coin.Red.ATLAS, TextureAtlas.class);
+        assetManager.load(Constants.TrailDot.ATLAS, TextureAtlas.class);
+        assetManager.load(Constants.MainAnimationScreen.YellowCoin.ATLAS, TextureAtlas.class);
+        assetManager.load(Constants.MainAnimationScreen.RedCoin.ATLAS, TextureAtlas.class);
         assetManager.load(Constants.Background.PATH, Texture.class);
-        assetManager.load(Constants.MainAnimation.ATLAS, TextureAtlas.class);
+        assetManager.load(Constants.MainAnimationScreen.ATLAS, TextureAtlas.class);
 
         // Load bitmap font
         assetManager.load(Constants.Font.FONT_FNT, BitmapFont.class);

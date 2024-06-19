@@ -37,8 +37,8 @@ public class AnimatedActor extends Actor {
         stateTime += delta;
 
         // Interpolate to target position
-        float newX = getX() + (targetX - getX()) * Constants.Game.LERP_FACTOR;
-        float newY = getY() + (targetY - getY()) * Constants.Game.LERP_FACTOR;
+        float newX = getX() + (targetX - getX()) * 0.1f;
+        float newY = getY() + (targetY - getY()) * 0.1f;
         setPosition(newX, newY);
     }
 

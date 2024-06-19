@@ -8,20 +8,13 @@ public class Constants {
         public static final String TITLE = "K and Clay";
     }
 
-    public static class Animation {
+    public static class SpriteAnimationSettings {
         public static final int NUM_COLS = 28; // Number of columns in the sprite sheet
         public static final int NUM_ROWS = 28; // Number of rows in the sprite sheet
         public static final float FRAME_DURATION = 5f / 100f; // Duration of each frame
     }
 
-    public static class Game {
-        public static final float ROTATION_SPEED = 1f / 20f; // Speed factor for rotation
-        public static final float LERP_FACTOR = 0.1f; // Factor for interpolation
-    }
-
-    public static class Buttons {
-        public static final int BUTTON_WIDTH = 100;
-        public static final int BUTTON_HEIGHT = 80;
+    public static class UIButtons {
         public static final int PADDING = 5;
         public static final int SLIDER_WIDTH = 300;
         public static final int CONTROL_BUTTON_HEIGHT = 50;
@@ -29,12 +22,36 @@ public class Constants {
         public static final int CONTROL_BUTTON_WIDTH = 300;
     }
 
-    public static class MainAnimation {
-        public static final String BUTTON_1X = "1x";
-        public static final String BUTTON_2X = "2x";
-        public static final String BUTTON_3X = "3x";
+    public static class MainAnimationScreen {
+        public static final String BUTTON_1X_NAME = "1x";
+        public static final String BUTTON_2X_NAME = "2x";
+        public static final String BUTTON_3X__NAME = "3x";
         public static final String ATLAS = "spine/speedButtons.atlas";
         public static final String JSON = "spine/speedButtons.json";
+        public static final float COIN_WIDTH_PERCENTAGE = 0.4f;
+        public static final float COIN_HEIGHT_PERCENTAGE = 0.4f;
+        public static final float BUTTONS_WIDTH_PERCENTAGE = 0.3f;
+        public static final float BUTTONS_HEIGHT_PERCENTAGE = 0.3f;
+
+        public static class YellowCoin {
+            public static final String ATLAS = "spine/coin-yellow.atlas";
+            public static final String JSON = "spine/coin-yellow.json";
+        }
+
+        public static class RedCoin {
+            public static final String ATLAS = "spine/coin-red.atlas";
+            public static final String JSON = "spine/coin-red.json";
+        }
+    }
+
+    public static class MainMenuScreen {
+        public static final String ATLAS = "spine/menu.atlas";
+        public static final String JSON = "spine/menu.json";
+        public static final String BUTTON_PLAY_NAME = "play";
+        public static final String BUTTON_QUIT_NAME = "quit";
+        public static final String BUTTON_SETTINGS_NAME = "settings";
+        public static final float SKEL_WIDTH_PERCENTAGE = 1.3f;
+        public static final float SKEL_HEIGHT_PERCENTAGE = 1.3f;
     }
 
     public static class Audio {
@@ -56,44 +73,12 @@ public class Constants {
         public static final float MAX_SCALE = 0.5f;
         public static final int MIN_ROTATION = 0;
         public static final int MAX_ROTATION = 359;
-    }
-
-    public static class MainMenuScreen {
-        public static final String ATLAS = "spine/menu.atlas";
-        public static final String JSON = "spine/menu.json";
-        public static final String BUTTON_PLAY = "play";
-        public static final String BUTTON_QUIT = "quit";
-        public static final String BUTTON_SETTINGS = "settings";
-        public static final float LOGO_WIDTH_PERCENTAGE = 1.3f;
-        public static final float LOGO_HEIGHT_PERCENTAGE = 1.3f;
-    }
-
-    public static class MainAnimationScreen {
-        public static final float COIN_WIDTH_PERCENTAGE = 0.4f;
-        public static final float COIN_HEIGHT_PERCENTAGE = 0.4f;
-        public static final float BUTTONS_WIDTH_PERCENTAGE = 0.3f;
-        public static final float BUTTONS_HEIGHT_PERCENTAGE = 0.3f;
-    }
-
-    public static class CursorTrail {
         public static final String ATLAS = "spine/trailDot.atlas";
         public static final String JSON = "spine/trailDot.json";
     }
 
     public static class Skin {
         public static final String JSON = "skin/default/skin/uiskin.json";
-    }
-
-    public static class Coin {
-        public static class Yellow {
-            public static final String ATLAS = "spine/coin-yellow.atlas";
-            public static final String JSON = "spine/coin-yellow.json";
-        }
-
-        public static class Red {
-            public static final String ATLAS = "spine/coin-red.atlas";
-            public static final String JSON = "spine/coin-red.json";
-        }
     }
 
     public static class Sounds {

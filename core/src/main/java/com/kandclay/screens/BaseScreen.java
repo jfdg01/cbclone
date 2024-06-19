@@ -133,8 +133,8 @@ public abstract class BaseScreen implements Screen {
         currentColor.fromHsv(hue, Constants.TrailDot.SATURATION, Constants.TrailDot.VALUE);
         currentColor.a = Constants.TrailDot.ALPHA;
 
-        String trailAtlasPath = Constants.CursorTrail.ATLAS;
-        String trailSkeletonPath = Constants.CursorTrail.JSON;
+        String trailAtlasPath = Constants.TrailDot.ATLAS;
+        String trailSkeletonPath = Constants.TrailDot.JSON;
 
         Skeleton trailSkeleton = spineAnimationHandler.createSkeleton(trailAtlasPath, trailSkeletonPath);
         AnimationState trailState = spineAnimationHandler.createAnimationState(trailSkeleton);

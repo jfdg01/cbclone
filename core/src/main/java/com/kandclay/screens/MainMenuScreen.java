@@ -47,9 +47,9 @@ public class MainMenuScreen extends BaseScreen {
         shapeRenderer = new ShapeRenderer();
 
         hoverStates = new HashMap<String, Boolean>();
-        hoverStates.put(Constants.MainMenuScreen.BUTTON_PLAY, false);
-        hoverStates.put(Constants.MainMenuScreen.BUTTON_QUIT, false);
-        hoverStates.put(Constants.MainMenuScreen.BUTTON_SETTINGS, false);
+        hoverStates.put(Constants.MainMenuScreen.BUTTON_PLAY_NAME, false);
+        hoverStates.put(Constants.MainMenuScreen.BUTTON_QUIT_NAME, false);
+        hoverStates.put(Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, false);
 
         stage.addListener(new InputListener() {
             @Override
@@ -75,7 +75,7 @@ public class MainMenuScreen extends BaseScreen {
         skeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
         state = spineAnimationHandler.createAnimationState(skeleton);
 
-        setSkeletonScale(skeleton, Constants.MainMenuScreen.LOGO_WIDTH_PERCENTAGE, Constants.MainMenuScreen.LOGO_HEIGHT_PERCENTAGE); // Adjust the percentages as needed
+        setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE); // Adjust the percentages as needed
         setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
         state.setAnimation(0, "animation", false);
 
@@ -105,9 +105,9 @@ public class MainMenuScreen extends BaseScreen {
     }
 
     private void handleHover(float x, float y) {
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_PLAY, 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_QUIT, 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_SETTINGS, 3, "Buttons/SettingsHoverIn", "Buttons/SettingsHoverOut");
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, 3, "Buttons/SettingsHoverIn", "Buttons/SettingsHoverOut");
     }
 
     private void updateHoverState(float x, float y, String buttonName, int trackIndex, String hoverInAnim, String hoverOutAnim) {
@@ -124,12 +124,12 @@ public class MainMenuScreen extends BaseScreen {
     }
 
     private void handleClick(float x, float y) {
-        if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_PLAY)) {
-            playButtonPressAnimation(Constants.MainMenuScreen.BUTTON_PLAY, "Buttons/PlayPress", ScreenType.GAME);
-        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_QUIT)) {
-            playButtonPressAnimation(Constants.MainMenuScreen.BUTTON_QUIT, "Buttons/QuitPress", null);
-        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_SETTINGS)) {
-            playButtonPressAnimation(Constants.MainMenuScreen.BUTTON_SETTINGS, "Buttons/SettingsPress", ScreenType.OPTIONS);
+        if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME)) {
+            playButtonPressAnimation(Constants.MainMenuScreen.BUTTON_PLAY_NAME, "Buttons/PlayPress", ScreenType.GAME);
+        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME)) {
+            playButtonPressAnimation(Constants.MainMenuScreen.BUTTON_QUIT_NAME, "Buttons/QuitPress", null);
+        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_SETTINGS_NAME)) {
+            playButtonPressAnimation(Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, "Buttons/SettingsPress", ScreenType.OPTIONS);
         }
     }
 
@@ -225,9 +225,9 @@ public class MainMenuScreen extends BaseScreen {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.RED);
-        drawDebugBounds(Constants.MainMenuScreen.BUTTON_PLAY);
-        drawDebugBounds(Constants.MainMenuScreen.BUTTON_QUIT);
-        drawDebugBounds(Constants.MainMenuScreen.BUTTON_SETTINGS);
+        drawDebugBounds(Constants.MainMenuScreen.BUTTON_PLAY_NAME);
+        drawDebugBounds(Constants.MainMenuScreen.BUTTON_QUIT_NAME);
+        drawDebugBounds(Constants.MainMenuScreen.BUTTON_SETTINGS_NAME);
         shapeRenderer.end();
     }
 
@@ -240,7 +240,7 @@ public class MainMenuScreen extends BaseScreen {
     public void resize(int width, int height) {
         super.resize(width, height);
         viewport.update(width, height, true);
-        setSkeletonScale(skeleton, Constants.MainMenuScreen.LOGO_WIDTH_PERCENTAGE, Constants.MainMenuScreen.LOGO_HEIGHT_PERCENTAGE);
+        setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
         setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
     }
 
