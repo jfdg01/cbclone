@@ -3,7 +3,7 @@ package com.kandclay.utils;
 public class Constants {
 
     public static class General {
-        public static final int WIDTH = 1920;
+        public static final int WIDTH = 1080;
         public static final int HEIGHT = 1080;
         public static final String TITLE = "K and Clay";
     }
