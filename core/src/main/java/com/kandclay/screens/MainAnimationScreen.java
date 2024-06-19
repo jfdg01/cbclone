@@ -188,6 +188,8 @@ public class MainAnimationScreen extends BaseScreen {
 
         setButtonSkeletonScale();
         setButtonSkeletonPosition();
+
+        playButtonPressAnimation(Constants.MainAnimation.BUTTON_1X, "1x/pressed", 1f);
     }
 
     private void handleHover(float x, float y) {
@@ -310,7 +312,7 @@ public class MainAnimationScreen extends BaseScreen {
         batch.end();
 
         // Render debug bounds
-        renderDebug();
+        // renderDebug();
     }
 
     private void renderDebug() {

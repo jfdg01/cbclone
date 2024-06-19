@@ -1,6 +1,6 @@
 {
   "skeleton": {
-    "hash": "fcn/04H1RvlD0q24V1r29b3jszU",
+    "hash": "yLlRm7ocKl/gwYGN4AROMtze+sA",
     "spine": "3.8.75",
     "x": 60,
     "y": -1676,
@@ -51,16 +51,19 @@
     {
       "name": "bg-3x",
       "bone": "3x",
+      "color": "628ba1ff",
       "attachment": "bg"
     },
     {
       "name": "bg-2x",
       "bone": "2x",
+      "color": "628ba1ff",
       "attachment": "bg"
     },
     {
       "name": "bg-1x",
       "bone": "1x",
+      "color": "628ba1ff",
       "attachment": "bg"
     },
     {
@@ -147,7 +150,7 @@
           "scale": [
             {},
             {
-              "time": 0.1667,
+              "time": 0.1333,
               "x": 1.2,
               "y": 1.2
             }
@@ -161,7 +164,7 @@
           "scale": [
             {},
             {
-              "time": 0.1667,
+              "time": 0.1333,
               "x": 1.2,
               "y": 1.2
             }
@@ -175,7 +178,7 @@
           "scale": [
             {},
             {
-              "time": 0.0333,
+              "time": 0.1333,
               "x": 1.2,
               "y": 1.2
             }
@@ -192,7 +195,7 @@
               "y": 1.2
             },
             {
-              "time": 0.0333
+              "time": 0.1333
             }
           ]
         }
@@ -207,7 +210,7 @@
               "y": 1.2
             },
             {
-              "time": 0.1667
+              "time": 0.1333
             }
           ]
         }
@@ -222,7 +225,7 @@
               "y": 1.2
             },
             {
-              "time": 0.1667
+              "time": 0.1333
             }
           ]
         }
@@ -233,7 +236,7 @@
         "bg-1x": {
           "color": [
             {
-              "color": "ff92f9ff"
+              "color": "4d96bbff"
             }
           ]
         }
@@ -244,7 +247,7 @@
         "bg-2x": {
           "color": [
             {
-              "color": "ff92f8ff"
+              "color": "4d96bbff"
             }
           ]
         }
@@ -255,7 +258,7 @@
         "bg-3x": {
           "color": [
             {
-              "color": "ff92f8ff"
+              "color": "4d96bbff"
             }
           ]
         }
