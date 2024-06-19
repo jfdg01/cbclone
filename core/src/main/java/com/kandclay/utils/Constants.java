@@ -2,41 +2,9 @@ package com.kandclay.utils;
 
 public class Constants {
 
-    public enum ScreenType {
-        MENU,
-        GAME,
-        OPTIONS,
-    }
-
-    public enum GameState {
-        RUNNING,
-        PAUSED,
-        GAME_OVER
-    }
-
-    public enum HairColor {
-        BLONDE, BRUNETTE, REDHEAD;
-
-        private static final HairColor[] vals = values();
-
-        public HairColor next() {
-            return vals[(this.ordinal() + 1) % vals.length];
-        }
-    }
-
-    public enum Height {
-        SHORT, AVERAGE, TALL;
-
-        private static final Height[] vals = values();
-
-        public Height next() {
-            return vals[(this.ordinal() + 1) % vals.length];
-        }
-    }
-
     public static class General {
-        public static final int WIDTH = 800;
-        public static final int HEIGHT = 800;
+        public static final int WIDTH = 1600;
+        public static final int HEIGHT = 1600;
         public static final String TITLE = "K and Clay";
     }
 
@@ -90,12 +58,21 @@ public class Constants {
         public static final int MAX_ROTATION = 359;
     }
 
-    public static class MainMenu {
+    public static class MainMenuScreen {
         public static final String ATLAS = "spine/menu.atlas";
         public static final String JSON = "spine/menu.json";
         public static final String BUTTON_PLAY = "play";
         public static final String BUTTON_QUIT = "quit";
         public static final String BUTTON_SETTINGS = "settings";
+        public static final float LOGO_WIDTH_PERCENTAGE = 1.3f;
+        public static final float LOGO_HEIGHT_PERCENTAGE = 1.3f;
+    }
+
+    public static class MainAnimationScreen {
+        public static final float COIN_WIDTH_PERCENTAGE = 0.4f;
+        public static final float COIN_HEIGHT_PERCENTAGE = 0.4f;
+        public static final float BUTTONS_WIDTH_PERCENTAGE = 0.3f;
+        public static final float BUTTONS_HEIGHT_PERCENTAGE = 0.3f;
     }
 
     public static class CursorTrail {

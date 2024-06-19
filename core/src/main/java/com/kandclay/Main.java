@@ -20,7 +20,7 @@ import com.kandclay.managers.ConfigurationManager;
 import com.kandclay.managers.MyAssetManager;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
-import com.kandclay.utils.Constants.ScreenType;
+import com.kandclay.utils.ScreenType;
 
 
 public class Main extends ApplicationAdapter {
@@ -53,7 +53,7 @@ public class Main extends ApplicationAdapter {
 
     private void loadInitialAssets() {
         assetManager.load(Constants.Skin.JSON, Skin.class);
-        assetManager.load(Constants.MainMenu.ATLAS, TextureAtlas.class);
+        assetManager.load(Constants.MainMenuScreen.ATLAS, TextureAtlas.class);
         assetManager.load(Constants.CursorTrail.ATLAS, TextureAtlas.class);
         assetManager.load(Constants.Coin.Yellow.ATLAS, TextureAtlas.class);
         assetManager.load(Constants.Coin.Red.ATLAS, TextureAtlas.class);

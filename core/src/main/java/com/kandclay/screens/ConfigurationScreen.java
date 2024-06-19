@@ -7,13 +7,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
+import com.kandclay.utils.HairColor;
+import com.kandclay.utils.ScreenType;
 
 public class ConfigurationScreen extends BaseScreen {
     private Slider volumeSlider;
     private TextButton backButton;
     private TextButton hairColorButton;
     private TextButton coinColorButton;
-    private Constants.HairColor currentHairColor;
+    private HairColor currentHairColor;
     private boolean isYellowCoin;
 
     public ConfigurationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
@@ -27,10 +29,10 @@ public class ConfigurationScreen extends BaseScreen {
 
         Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
         float savedVolume = configManager.getPreference("volume", Constants.Audio.DEFAULT_VOLUME);
-        String savedHairColor = configManager.getPreference("hairColor", Constants.HairColor.BLONDE.toString());
+        String savedHairColor = configManager.getPreference("hairColor", HairColor.BLONDE.toString());
         isYellowCoin = configManager.getPreference("coinColor", true);
 
-        currentHairColor = Constants.HairColor.valueOf(savedHairColor);
+        currentHairColor = HairColor.valueOf(savedHairColor);
 
         volumeSlider = new Slider(0, 1, 0.01f, false, skin);
         volumeSlider.setValue(savedVolume);
@@ -47,7 +49,7 @@ public class ConfigurationScreen extends BaseScreen {
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                screenManager.setScreen(Constants.ScreenType.MENU);
+                screenManager.setScreen(ScreenType.MENU);
             }
         });
 

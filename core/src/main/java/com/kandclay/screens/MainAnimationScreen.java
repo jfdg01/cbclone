@@ -18,6 +18,7 @@ import com.esotericsoftware.spine.attachments.RegionAttachment;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.utils.Constants;
 import com.kandclay.managers.*;
+import com.kandclay.utils.ScreenType;
 
 import java.util.HashMap;
 
@@ -63,7 +64,7 @@ public class MainAnimationScreen extends BaseScreen {
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                screenManager.setScreen(Constants.ScreenType.MENU);
+                screenManager.setScreen(ScreenType.MENU);
             }
         });
 
@@ -162,8 +163,10 @@ public class MainAnimationScreen extends BaseScreen {
         String skeletonPath = isYellowCoin ? Constants.Coin.Yellow.JSON : Constants.Coin.Red.JSON;
         coinSkeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
         coinState = spineAnimationHandler.createAnimationState(coinSkeleton);
-        coinSkeleton.setScale(1f, 1f);
-        setCoinSkeletonPosition();
+
+        setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE,  Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
+        setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+
         coinState.setAnimation(0, "animation", true);
         coinState.getCurrent(0).setTrackTime(stateTime);
         coinState.addListener(new AnimationState.AnimationStateAdapter() {
@@ -186,8 +189,8 @@ public class MainAnimationScreen extends BaseScreen {
         buttonSkeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
         buttonState = spineAnimationHandler.createAnimationState(buttonSkeleton);
 
-        setButtonSkeletonScale();
-        setButtonSkeletonPosition();
+        setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE,  Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
+        setSkeletonPosition(buttonSkeleton, 0, viewport.getWorldHeight());
 
         playButtonPressAnimation(Constants.MainAnimation.BUTTON_1X, "1x/pressed", 1f);
     }
@@ -225,16 +228,20 @@ public class MainAnimationScreen extends BaseScreen {
         Gdx.app.log("MainAnimationScreen", "Playing button press animation: " + animationName);
         buttonState.setAnimation(4, animationName, false).setListener(new AnimationState.AnimationStateListener() {
             @Override
-            public void start(AnimationState.TrackEntry entry) {}
+            public void start(AnimationState.TrackEntry entry) {
+            }
 
             @Override
-            public void interrupt(AnimationState.TrackEntry entry) {}
+            public void interrupt(AnimationState.TrackEntry entry) {
+            }
 
             @Override
-            public void end(AnimationState.TrackEntry entry) {}
+            public void end(AnimationState.TrackEntry entry) {
+            }
 
             @Override
-            public void dispose(AnimationState.TrackEntry entry) {}
+            public void dispose(AnimationState.TrackEntry entry) {
+            }
 
             @Override
             public void complete(AnimationState.TrackEntry entry) {
@@ -243,7 +250,8 @@ public class MainAnimationScreen extends BaseScreen {
             }
 
             @Override
-            public void event(AnimationState.TrackEntry entry, Event event) {}
+            public void event(AnimationState.TrackEntry entry, Event event) {
+            }
         });
     }
 
@@ -335,31 +343,12 @@ public class MainAnimationScreen extends BaseScreen {
         super.resize(width, height);
         viewport.update(width, height, true);
         stage.getViewport().update(width, height, true);
-        setCoinSkeletonPosition();
-        setButtonSkeletonPosition();
-    }
 
-    private void setCoinSkeletonPosition() {
-        if (coinSkeleton != null) {
-            float centerX = viewport.getWorldWidth() / 2;
-            float centerY = viewport.getWorldHeight() / 2;
-            coinSkeleton.setPosition(centerX, centerY);
-        }
-    }
+        setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE,  Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
+        setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
 
-    private void setButtonSkeletonPosition() {
-        if (buttonSkeleton != null) {
-            float centerX = 0;
-            float centerY = viewport.getWorldHeight();
-            buttonSkeleton.setPosition(centerX, centerY);
-        }
-    }
-
-    private void setButtonSkeletonScale() {
-        if (buttonSkeleton != null) {
-            float scale = 0.2f; // Adjust the scale as needed
-            buttonSkeleton.setScale(scale, scale);
-        }
+        setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE,  Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
+        setSkeletonPosition(buttonSkeleton, 0, viewport.getWorldHeight());
     }
 
     @Override
@@ -368,3 +357,4 @@ public class MainAnimationScreen extends BaseScreen {
         shapeRenderer.dispose();
     }
 }
+

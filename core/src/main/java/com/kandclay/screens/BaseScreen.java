@@ -169,5 +169,28 @@ public abstract class BaseScreen implements Screen {
             this.y = y;
         }
     }
+
+    protected void setSkeletonScale(Skeleton skeleton, float widthPercentage, float heightPercentage) {
+        if (skeleton != null) {
+            float screenWidth = viewport.getScreenWidth();
+            float screenHeight = viewport.getWorldHeight();
+
+            float skeletonWidth = screenWidth * widthPercentage;
+            float skeletonHeight = screenHeight * heightPercentage;
+
+            float scaleX = skeletonWidth / skeleton.getData().getWidth();
+            float scaleY = skeletonHeight / skeleton.getData().getHeight();
+
+            float scale = Math.min(scaleX, scaleY);
+
+            skeleton.setScale(scale, scale);
+        }
+    }
+
+    protected void setSkeletonPosition(Skeleton skeleton, float x, float y) {
+        if (skeleton != null) {
+            skeleton.setPosition(x, y);
+        }
+    }
 }
 

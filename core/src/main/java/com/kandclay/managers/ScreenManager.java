@@ -3,7 +3,7 @@ package com.kandclay.managers;
 import com.kandclay.handlers.SpriteSheetAnimationHandler;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.screens.*;
-import com.kandclay.utils.Constants.ScreenType;
+import com.kandclay.utils.ScreenType;
 
 public class ScreenManager {
     private MyAssetManager assetManager;
