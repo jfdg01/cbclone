@@ -253,6 +253,8 @@ public class MainMenuScreen extends BaseScreen {
         // viewport.update(width, height, true);
         setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
         setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+        Gdx.app.log("MainMenuScreen", "Resize: width=" + width + " height=" + height);
+        Gdx.app.log("MainMenuScreen", "Viewport: worldWidth=" + viewport.getWorldWidth() + " worldHeight=" + viewport.getWorldHeight() + " screenWidth=" + viewport.getScreenWidth() + " screenHeight=" + viewport.getScreenHeight());
     }
 
     @Override

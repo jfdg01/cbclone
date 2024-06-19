@@ -55,7 +55,7 @@ configure(subprojects - project(':android')) {
 
 subprojects {
   version = '1.0.0'
-  ext.appName = 'CBClone'
+  ext.appName = 'TestGame'
   repositories {
     mavenCentral()
     maven { url 'https://s01.oss.sonatype.org' }
@@ -67,4 +67,4 @@ subprojects {
   }
 }
 
-eclipse.project.name = 'CBClone' + '-parent'
+eclipse.project.name = 'TestGame' + '-parent'

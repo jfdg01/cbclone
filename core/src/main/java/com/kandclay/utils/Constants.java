@@ -3,8 +3,8 @@ package com.kandclay.utils;
 public class Constants {
 
     public static class General {
-        public static final int WIDTH = 800;
-        public static final int HEIGHT = 800;
+        public static final int WIDTH = 1920;
+        public static final int HEIGHT = 1080;
         public static final String TITLE = "K and Clay";
     }
 
@@ -94,6 +94,6 @@ public class Constants {
     }
 
     public static class Background {
-        public static final String PATH = "background.png";
+        public static final String PATH = "background.jpg";
     }
 }

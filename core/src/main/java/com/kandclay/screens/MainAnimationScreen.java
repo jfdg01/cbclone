@@ -2,6 +2,7 @@ package com.kandclay.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -39,6 +40,7 @@ public class MainAnimationScreen extends BaseScreen {
     private float lastSliderValue = 0f;
     private HashMap<String, Boolean> hoverStates;
     private ShapeRenderer shapeRenderer;
+    private Texture backgroundTexture;
 
     public MainAnimationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -51,6 +53,7 @@ public class MainAnimationScreen extends BaseScreen {
 
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
+        backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class);
 
         shapeRenderer = new ShapeRenderer();
 
@@ -164,20 +167,15 @@ public class MainAnimationScreen extends BaseScreen {
         coinSkeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
         coinState = spineAnimationHandler.createAnimationState(coinSkeleton);
 
-        setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE,  Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
+        setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
         setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
 
         coinState.setAnimation(0, "animation", true);
         coinState.getCurrent(0).setTrackTime(stateTime);
         coinState.addListener(new AnimationState.AnimationStateAdapter() {
             @Override
-            public void start(AnimationState.TrackEntry entry) {
-                System.out.println("Animation started");
-            }
-
-            @Override
             public void complete(AnimationState.TrackEntry entry) {
-                // System.out.println("Animation completed");
+                System.out.println("Animation completed");
             }
         });
     }
@@ -189,7 +187,7 @@ public class MainAnimationScreen extends BaseScreen {
         buttonSkeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
         buttonState = spineAnimationHandler.createAnimationState(buttonSkeleton);
 
-        setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE,  Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
+        setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
         setSkeletonPosition(buttonSkeleton, 0, viewport.getWorldHeight());
 
         playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_1X_NAME, "1x/pressed", 1f);
@@ -308,6 +306,7 @@ public class MainAnimationScreen extends BaseScreen {
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
+        batch.draw(backgroundTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
         // Draw the coin animation
         renderer.draw(batch, coinSkeleton);
         // Draw the button animations
@@ -344,10 +343,10 @@ public class MainAnimationScreen extends BaseScreen {
         viewport.update(width, height, true);
         stage.getViewport().update(width, height, true);
 
-        setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE,  Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
+        setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
         setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
 
-        setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE,  Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
+        setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
         setSkeletonPosition(buttonSkeleton, 0, viewport.getWorldHeight());
     }
 
