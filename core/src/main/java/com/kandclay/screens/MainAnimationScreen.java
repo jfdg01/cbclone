@@ -216,8 +216,10 @@ public class MainAnimationScreen extends BaseScreen {
         if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_1X_NAME)) {
             playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_1X_NAME, "1x/pressed", 1f);
         } else if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_2X_NAME)) {
+            buttonSkeleton.setSkin("Accessible");
             playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_2X_NAME, "2x/pressed", 2f);
         } else if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_3X__NAME)) {
+            buttonSkeleton.setSkin("Saturated");
             playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_3X__NAME, "3x/pressed", 3f);
         }
     }

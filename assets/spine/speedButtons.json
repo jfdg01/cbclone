@@ -1,12 +1,12 @@
 {
   "skeleton": {
-    "hash": "yLlRm7ocKl/gwYGN4AROMtze+sA",
+    "hash": "iXXmyN5n9aFyLSGu6XBtkWtAY5w",
     "spine": "3.8.75",
     "x": 60,
     "y": -1676,
     "width": 512,
     "height": 1616,
-    "images": "",
+    "images": "./Skins/",
     "audio": ""
   },
   "bones": [
@@ -84,58 +84,135 @@
   ],
   "skins": [
     {
-      "name": "default",
+      "name": "Accessible",
       "attachments": {
         "2x": {
           "2x": {
+            "path": "Accessible/2x",
             "width": 512,
             "height": 512
           }
         },
         "bg-2x": {
           "bg": {
+            "path": "Accessible/bg",
             "width": 512,
             "height": 512
           }
         },
         "shadow-2x": {
           "shadow": {
+            "path": "Accessible/shadow",
             "width": 512,
             "height": 512
           }
         },
         "3x": {
           "3x": {
+            "path": "Accessible/3x",
             "width": 512,
             "height": 512
           }
         },
         "1x": {
           "1x": {
+            "path": "Accessible/1x",
             "width": 512,
             "height": 512
           }
         },
         "bg-3x": {
           "bg": {
+            "path": "Accessible/bg",
             "width": 512,
             "height": 512
           }
         },
         "bg-1x": {
           "bg": {
+            "path": "Accessible/bg",
             "width": 512,
             "height": 512
           }
         },
         "shadow-3x": {
           "shadow": {
+            "path": "Accessible/shadow",
             "width": 512,
             "height": 512
           }
         },
         "shadow-1x": {
           "shadow": {
+            "path": "Accessible/shadow",
+            "width": 512,
+            "height": 512
+          }
+        }
+      }
+    },
+    {
+      "name": "Saturated",
+      "attachments": {
+        "2x": {
+          "2x": {
+            "path": "Saturated/2x",
+            "width": 512,
+            "height": 512
+          }
+        },
+        "bg-2x": {
+          "bg": {
+            "path": "Saturated/bg",
+            "width": 512,
+            "height": 512
+          }
+        },
+        "shadow-2x": {
+          "shadow": {
+            "path": "Saturated/shadow",
+            "width": 512,
+            "height": 512
+          }
+        },
+        "3x": {
+          "3x": {
+            "path": "Saturated/3x",
+            "width": 512,
+            "height": 512
+          }
+        },
+        "1x": {
+          "1x": {
+            "path": "Saturated/1x",
+            "width": 512,
+            "height": 512
+          }
+        },
+        "bg-3x": {
+          "bg": {
+            "path": "Saturated/bg",
+            "width": 512,
+            "height": 512
+          }
+        },
+        "bg-1x": {
+          "bg": {
+            "path": "Saturated/bg",
+            "width": 512,
+            "height": 512
+          }
+        },
+        "shadow-3x": {
+          "shadow": {
+            "path": "Saturated/shadow",
+            "width": 512,
+            "height": 512
+          }
+        },
+        "shadow-1x": {
+          "shadow": {
+            "path": "Saturated/shadow",
             "width": 512,
             "height": 512
           }

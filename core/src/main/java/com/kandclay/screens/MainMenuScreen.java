@@ -24,7 +24,6 @@ public class MainMenuScreen extends BaseScreen {
     private Skeleton skeleton;
     private AnimationState state;
     private BitmapFont font;
-    private float speedMultiplier = 1f;
     private Map<String, Boolean> hoverStates;
     private Texture backgroundTexture;
     private ShapeRenderer shapeRenderer;
@@ -221,7 +220,7 @@ public class MainMenuScreen extends BaseScreen {
     public void render(float delta) {
         super.render(delta);
 
-        state.update(delta * speedMultiplier);
+        state.update(delta);
         state.apply(skeleton);
         skeleton.updateWorldTransform();
 
