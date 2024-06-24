@@ -20,8 +20,8 @@ public class AudioManager implements Disposable {
 
     // Private constructor to prevent instantiation
     private AudioManager() {
-        soundMap = new HashMap<>();
-        musicMap = new HashMap<>();
+        soundMap = new HashMap<String, Sound>();
+        musicMap = new HashMap<String, Music>();
         volume = Constants.Audio.DEFAULT_VOLUME; // Default volume
     }
 
