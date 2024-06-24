@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.Disposable;
 
 public class MyAssetManager implements Disposable {
     private static MyAssetManager instance;
-    private AssetManager assetManager;
+    private final AssetManager assetManager;
 
     // Private constructor to prevent instantiation
     private MyAssetManager() {

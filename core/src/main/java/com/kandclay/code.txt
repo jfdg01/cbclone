@@ -340,7 +340,11 @@ public class SpineAnimationHandler {
         TextureAtlas atlas = assetManager.get(atlasPath, TextureAtlas.class);
         SkeletonJson json = new SkeletonJson(atlas);
         SkeletonData skeletonData = json.readSkeletonData(Gdx.files.internal(skeletonPath));
-        return new Skeleton(skeletonData);
+        Skeleton skeleton = new Skeleton(skeletonData);
+        if (skeleton.getData().getSkins() != null) {
+            skeleton.setSkin(skeleton.getData().getSkins().first().getName());
+        }
+        return skeleton;
     }
 
     public AnimationState createAnimationState(Skeleton skeleton) {
@@ -596,7 +600,7 @@ public class ConfigurationManager {
 
 public class MyAssetManager implements Disposable {
     private static MyAssetManager instance;
-    private AssetManager assetManager;
+    private final AssetManager assetManager;
 
     // Private constructor to prevent instantiation
     private MyAssetManager() {
@@ -745,6 +749,7 @@ public abstract class BaseScreen implements Screen {
         this.stage = new Stage(viewport);
         this.trailDots = new SnapshotArray<TrailDot>();
         this.batch = new SpriteBatch();
+
         Gdx.input.setInputProcessor(stage);
 
         stage.addListener(new InputListener() {
@@ -758,8 +763,7 @@ public abstract class BaseScreen implements Screen {
 
     @Override
     public void show() {
-        Gdx.input.setInputProcessor(stage);
-        // resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+
     }
 
     public void clearScreen() {
@@ -794,7 +798,6 @@ public abstract class BaseScreen implements Screen {
         viewport.update(width, height);
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         stage.getViewport().update(width, height, true);
-        // viewport.update(width, height);  // Update the viewport
         Gdx.app.log("BaseScreen", "Resize: width=" + width + " height=" + height);
         Gdx.app.log("BaseScreen", "Camera position: x=" + camera.position.x + " y=" + camera.position.y);
         Gdx.app.log("BaseScreen", "Viewport: worldWidth=" + viewport.getWorldWidth() + " worldHeight=" + viewport.getWorldHeight() + " screenWidth=" + viewport.getScreenWidth() + " screenHeight=" + viewport.getScreenHeight());
@@ -1004,81 +1007,6 @@ public class ConfigurationScreen extends BaseScreen {
 
 
 
-public class InnerScreen extends BaseScreen {
-    private Texture backgroundTexture;
-
-    private SkeletonRenderer renderer;
-    private Skeleton coinSkeleton;
-    private AnimationState coinState;
-
-    public InnerScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
-        super(spineAnimationHandler, screenManager);
-        camera = new OrthographicCamera();
-        viewport = new FitViewport(200, 200, camera);
-    }
-
-    @Override
-    public void show() {
-        super.show();
-        backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class); // Add this line
-
-        renderer = new SkeletonRenderer();
-        renderer.setPremultipliedAlpha(true);
-
-        initializeCoinAnimation();
-        setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE); // Adjust the percentages as needed
-        setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
-    }
-
-    private void initializeCoinAnimation() {
-        String atlasPath = Constants.MainAnimationScreen.YellowCoin.ATLAS;
-        String skeletonPath = Constants.MainAnimationScreen.YellowCoin.JSON;
-        coinSkeleton = spineAnimationHandler.createSkeleton(atlasPath, skeletonPath);
-        coinState = spineAnimationHandler.createAnimationState(coinSkeleton);
-
-        setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE); // Adjust the percentages as needed
-        setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
-
-        coinState.setAnimation(0, "animation", true);
-    }
-
-    @Override
-    public void render(float delta) {
-        viewport.apply();
-        batch.setProjectionMatrix(camera.combined);
-
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
-        // Coin animation
-        coinState.update(delta);
-        coinState.apply(coinSkeleton);
-        coinSkeleton.updateWorldTransform();
-        renderer.draw(batch, coinSkeleton);
-        batch.end();
-
-        // Render inner screen elements (if any)
-        stage.getBatch().setProjectionMatrix(camera.combined);
-        stage.act(delta);
-        stage.draw();
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        super.resize(width, height);
-        viewport.update(200, 200, false); // Update size if necessary
-        camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
-        setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE); // Adjust the percentages as needed
-        setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
-}
-
-
-
 
 
 public class MainAnimationScreen extends BaseScreen {
@@ -1092,13 +1020,14 @@ public class MainAnimationScreen extends BaseScreen {
     private TextButton backButton;
     private Slider slider;
     private TextButton modeButton;
-    private TextButton changeColorButton;
+    private TextButton changeCoinColorButton;
     private boolean isLooping = true;
     private float speedMultiplier = 1f;
     private float lastSliderValue = 0f;
     private HashMap<String, Boolean> hoverStates;
     private ShapeRenderer shapeRenderer;
     private Texture backgroundTexture;
+    private TextButton swapSkinsButton;  // New button to swap skins
 
     public MainAnimationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -1160,11 +1089,19 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        changeColorButton = new TextButton("Change Coin Color", skin, Constants.Font.BUTTON);
-        changeColorButton.addListener(new ChangeListener() {
+        changeCoinColorButton = new TextButton("Change Coin Color", skin, Constants.Font.BUTTON);
+        changeCoinColorButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 toggleCoinColor();
+            }
+        });
+
+        swapSkinsButton = new TextButton("Swap Skins", skin, Constants.Font.BUTTON);
+        swapSkinsButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                swapSkins();
             }
         });
 
@@ -1183,7 +1120,9 @@ public class MainAnimationScreen extends BaseScreen {
         Table topTable = new Table();
         topTable.setFillParent(true);
         topTable.top();
-        topTable.add(changeColorButton).pad(Constants.UIButtons.PADDING);
+        topTable.add(changeCoinColorButton).pad(Constants.UIButtons.PADDING);
+        topTable.row();
+        topTable.add(swapSkinsButton).pad(Constants.UIButtons.PADDING);  // Add the new button to the layout
 
         stage.addActor(bottomTable);
         stage.addActor(backButtonTable);
@@ -1268,6 +1207,12 @@ public class MainAnimationScreen extends BaseScreen {
         }
 
         hoverStates.put(buttonName, isHovered);
+    }
+
+    private void swapSkins() {
+        String currentSkin = buttonSkeleton.getSkin().getName();
+        String newSkin = currentSkin.equals("Saturated") ? "Accessible" : "Saturated";
+        buttonSkeleton.setSkin(newSkin);
     }
 
     private void handleClick(float x, float y) {
@@ -1423,7 +1368,6 @@ public class MainMenuScreen extends BaseScreen {
     private Skeleton skeleton;
     private AnimationState state;
     private BitmapFont font;
-    private float speedMultiplier = 1f;
     private Map<String, Boolean> hoverStates;
     private Texture backgroundTexture;
     private ShapeRenderer shapeRenderer;
@@ -1431,13 +1375,11 @@ public class MainMenuScreen extends BaseScreen {
 
     public MainMenuScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
-//        innerScreen = new InnerScreen(spineAnimationHandler, screenManager);
     }
 
     @Override
     public void show() {
         super.show();
-//        innerScreen.show();
 
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
@@ -1468,6 +1410,10 @@ public class MainMenuScreen extends BaseScreen {
                 return true;
             }
         });
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     private void initializeAnimations() {
@@ -1618,7 +1564,7 @@ public class MainMenuScreen extends BaseScreen {
     public void render(float delta) {
         super.render(delta);
 
-        state.update(delta * speedMultiplier);
+        state.update(delta);
         state.apply(skeleton);
         skeleton.updateWorldTransform();
 
@@ -1629,8 +1575,6 @@ public class MainMenuScreen extends BaseScreen {
         renderer.draw(batch, skeleton);
         super.renderTrail(delta);
         batch.end();
-
-//        innerScreen.render(delta);
 
 //        setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
 //        Gdx.app.log("MainMenuScreen", "Render: Skeleton position x=" + skeleton.getX() + " y=" + skeleton.getY());
@@ -1656,7 +1600,6 @@ public class MainMenuScreen extends BaseScreen {
         super.resize(width, height);
         setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
         setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
-//        innerScreen.resize(width, height);
     }
 
     @Override
@@ -1664,7 +1607,6 @@ public class MainMenuScreen extends BaseScreen {
         super.dispose();
         font.dispose();
         shapeRenderer.dispose();
-//        innerScreen.dispose();
     }
 }
 
