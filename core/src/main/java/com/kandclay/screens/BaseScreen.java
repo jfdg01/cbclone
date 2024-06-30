@@ -135,7 +135,7 @@ public abstract class BaseScreen implements Screen {
         }
     }
 
-    private void createTrailDot(float x, float y) {
+    void createTrailDot(float x, float y) {
         float hue = (trailDotCount % Constants.TrailDot.NUMBER_OF_COLORS);
 
         Color currentColor = new Color();
@@ -206,6 +206,14 @@ public abstract class BaseScreen implements Screen {
 
     public Stage getStage() {
         return stage;
+    }
+
+    public Viewport getViewport() {
+        return viewport;
+    }
+
+    public SpriteBatch getBatch() {
+        return batch;
     }
 }
 

@@ -1,12 +1,14 @@
 package com.kandclay.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -29,11 +31,8 @@ public class MainMenuScreen extends BaseScreen {
     private Map<String, Boolean> hoverStates;
     private Texture backgroundTexture;
     private ShapeRenderer shapeRenderer;
-    private boolean isInitialAnimationFinished = false;
-    private Viewport mainViewport;
+    private boolean isInitialAnimationFinished = false;;
     private Viewport backgroundViewport;
-    private SpriteBatch batch;
-    private Stage stage;
 
     public MainMenuScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -43,16 +42,11 @@ public class MainMenuScreen extends BaseScreen {
     public void show() {
         super.show();
 
-        mainViewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
-        backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
-        batch = new SpriteBatch();
-
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
 
         initializeAnimations();
 
-        font = new BitmapFont();
         backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class);
         shapeRenderer = new ShapeRenderer();
 
@@ -61,8 +55,9 @@ public class MainMenuScreen extends BaseScreen {
         hoverStates.put(Constants.MainMenuScreen.BUTTON_QUIT_NAME, false);
         hoverStates.put(Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, false);
 
-        stage = new Stage(mainViewport, batch);
-        stage.addListener(new InputListener() {
+        backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+
+        getStage().addListener(new InputListener() {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
                 if (isInitialAnimationFinished) {
@@ -79,7 +74,7 @@ public class MainMenuScreen extends BaseScreen {
         });
 
         InputMultiplexer multiplexer = new InputMultiplexer();
-        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(getStage());
         Gdx.input.setInputProcessor(multiplexer);
     }
 
@@ -91,7 +86,7 @@ public class MainMenuScreen extends BaseScreen {
         state = spineAnimationHandler.createAnimationState(skeleton);
 
         setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE); // Adjust the percentages as needed
-        setSkeletonPosition(skeleton, mainViewport.getWorldWidth() / 2, mainViewport.getWorldHeight() / 2);
+        setSkeletonPosition(skeleton, getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
         state.setAnimation(0, "animation", false);
 
         state.addListener(new AnimationState.AnimationStateListener() {
@@ -234,29 +229,30 @@ public class MainMenuScreen extends BaseScreen {
         state.update(delta);
         state.apply(skeleton);
         skeleton.updateWorldTransform();
-        // super.getStage().act();
 
         // Render background
         backgroundViewport.apply();
-        batch.setProjectionMatrix(backgroundViewport.getCamera().combined);
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, backgroundViewport.getWorldWidth(), backgroundViewport.getWorldHeight());
-        batch.end();
+        getBatch().setProjectionMatrix(backgroundViewport.getCamera().combined);
+        getBatch().begin();
+        getBatch().draw(backgroundTexture, 0, 0, backgroundViewport.getWorldWidth(), backgroundViewport.getWorldHeight());
+        getBatch().end();
 
         // Render content
-        mainViewport.apply();
-        batch.setProjectionMatrix(mainViewport.getCamera().combined);
-        batch.begin();
-        renderer.draw(batch, skeleton);
-        super.renderTrail(delta, batch);
-        batch.end();
+        getViewport().apply();
+        getBatch().setProjectionMatrix(getViewport().getCamera().combined);
+        getBatch().begin();
+        renderer.draw(getBatch(), skeleton);
+        super.renderTrail(delta, getBatch());
+        getBatch().end();
 
+        getStage().act(delta);
+        getStage().draw();
 //        setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
 //        Gdx.app.log("MainMenuScreen", "Render: Skeleton position x=" + skeleton.getX() + " y=" + skeleton.getY());
     }
 
     private void renderDebug() {
-        shapeRenderer.setProjectionMatrix(mainViewport.getCamera().combined);
+        shapeRenderer.setProjectionMatrix(getViewport().getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.RED);
         drawDebugBounds(Constants.MainMenuScreen.BUTTON_PLAY_NAME);
@@ -274,13 +270,13 @@ public class MainMenuScreen extends BaseScreen {
     public void resize(int width, int height) {
         super.resize(width, height);
 
-        mainViewport.update(width, height, true);
+        // mainViewport.update(width, height, true);
         // mainViewport.getCamera().position.set( mainViewport.getCamera().viewportWidth / 2,  mainViewport.getCamera().viewportHeight / 2, 0);
         backgroundViewport.update(width, height, true);
         // backgroundViewport.getCamera().position.set( backgroundViewport.getCamera().viewportWidth / 2,  backgroundViewport.getCamera().viewportHeight / 2, 0);
         // stage.getViewport().update(width, height, true);
         setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
-        setSkeletonPosition(skeleton, mainViewport.getWorldWidth() / 2, mainViewport.getWorldHeight() / 2);
+        setSkeletonPosition(skeleton, getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
     }
 
     @Override
