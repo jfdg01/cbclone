@@ -96,4 +96,8 @@ public class Constants {
     public static class Background {
         public static final String PATH = "background.jpg";
     }
+
+    public class Frame {
+        public static final String PATH = "frame.png";
+    }
 }

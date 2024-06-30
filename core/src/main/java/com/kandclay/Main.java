@@ -21,7 +21,6 @@ import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
 import com.kandclay.utils.ScreenType;
 
-
 public class Main extends ApplicationAdapter {
     private OrthographicCamera camera;
     private FitViewport viewport;

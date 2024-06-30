@@ -1,18 +1,23 @@
 package com.kandclay.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.esotericsoftware.spine.*;
 
 import com.esotericsoftware.spine.attachments.RegionAttachment;
@@ -42,6 +47,10 @@ public class MainAnimationScreen extends BaseScreen {
     private ShapeRenderer shapeRenderer;
     private Texture backgroundTexture;
     private TextButton swapSkinsButton;  // New button to swap skins
+    private Stage stage;
+    private Camera camera;
+    private Viewport mainViewport;
+    private SpriteBatch batch;
 
     public MainAnimationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -50,7 +59,10 @@ public class MainAnimationScreen extends BaseScreen {
 
     @Override
     public void show() {
-        super.show();
+        mainViewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+        camera = mainViewport.getCamera();
+        stage = new Stage(mainViewport);
+        batch = new SpriteBatch();
 
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
@@ -161,7 +173,7 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+        mainViewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         stage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
 
@@ -179,7 +191,7 @@ public class MainAnimationScreen extends BaseScreen {
         coinState = spineAnimationHandler.createAnimationState(coinSkeleton);
 
         setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+        setSkeletonPosition(coinSkeleton, mainViewport.getWorldWidth() / 2, mainViewport.getWorldHeight() / 2);
 
         coinState.setAnimation(0, "animation", true);
         coinState.getCurrent(0).setTrackTime(stateTime);
@@ -199,7 +211,7 @@ public class MainAnimationScreen extends BaseScreen {
         buttonState = spineAnimationHandler.createAnimationState(buttonSkeleton);
 
         setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(buttonSkeleton, 0, viewport.getWorldHeight());
+        setSkeletonPosition(buttonSkeleton, 0, mainViewport.getWorldHeight());
 
         playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_1X_NAME, "1x/pressed", 1f);
     }
@@ -306,7 +318,7 @@ public class MainAnimationScreen extends BaseScreen {
 
     @Override
     public void render(float delta) {
-        super.render(delta);
+        clearScreen();
 
         if (isLooping) {
             coinState.update(delta * speedMultiplier);
@@ -319,11 +331,11 @@ public class MainAnimationScreen extends BaseScreen {
         buttonState.apply(buttonSkeleton);
         buttonSkeleton.updateWorldTransform();
 
-        viewport.apply();
+        mainViewport.apply();
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        batch.draw(backgroundTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+        batch.draw(backgroundTexture, 0, 0, mainViewport.getWorldWidth(), mainViewport.getWorldHeight());
         // Draw the coin animation
         renderer.draw(batch, coinSkeleton);
         // Draw the button animations
@@ -332,7 +344,7 @@ public class MainAnimationScreen extends BaseScreen {
         stage.act(delta);
         stage.draw();
         // Draw the trail
-        super.renderTrail(delta);
+        super.renderTrail(delta, batch);
         batch.end();
 
         // Render debug bounds
@@ -357,14 +369,14 @@ public class MainAnimationScreen extends BaseScreen {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        viewport.update(width, height, true);
+        mainViewport.update(width, height, true);
         stage.getViewport().update(width, height, true);
 
         setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+        setSkeletonPosition(coinSkeleton, mainViewport.getWorldWidth() / 2, mainViewport.getWorldHeight() / 2);
 
         setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(buttonSkeleton, 0, viewport.getWorldHeight());
+        setSkeletonPosition(buttonSkeleton, 0, mainViewport.getWorldHeight());
     }
 
     @Override

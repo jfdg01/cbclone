@@ -2,6 +2,7 @@ package com.kandclay.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -11,7 +12,9 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.SnapshotArray;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.esotericsoftware.spine.AnimationState;
 import com.esotericsoftware.spine.Skeleton;
 import com.esotericsoftware.spine.SkeletonRenderer;
@@ -22,20 +25,21 @@ import com.kandclay.managers.MyAssetManager;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
 
+import javax.swing.text.View;
 import java.util.Iterator;
 
 public abstract class BaseScreen implements Screen {
-    protected Stage stage;
     protected MyAssetManager assetManager;
     protected AudioManager audioManager;
     protected SpineAnimationHandler spineAnimationHandler;
     protected ConfigurationManager configManager;
     protected ScreenManager screenManager;
-    protected OrthographicCamera camera;
-    protected FitViewport viewport;
     private SnapshotArray<TrailDot> trailDots;
     private int trailDotCount = 0;
-    protected SpriteBatch batch;
+    private SpriteBatch batch;
+    private Camera camera;
+    private Viewport viewport;
+    private Stage stage;
 
     public BaseScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         this.assetManager = MyAssetManager.getInstance();
@@ -45,8 +49,8 @@ public abstract class BaseScreen implements Screen {
         this.screenManager = screenManager;
 
         // Initialize camera and viewport
-        this.camera = new OrthographicCamera();
-        this.viewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT, camera);
+        this.viewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+        this.camera = viewport.getCamera();
 
         this.stage = new Stage(viewport);
         this.trailDots = new SnapshotArray<TrailDot>();
@@ -58,6 +62,7 @@ public abstract class BaseScreen implements Screen {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
                 createTrailDot(x, y);
+                Gdx.app.log("BaseScreen", "Mouse moved at x=" + x + " y=" + y);
                 return true;
             }
         });
@@ -78,7 +83,8 @@ public abstract class BaseScreen implements Screen {
         clearScreen();
     }
 
-    void renderTrail(float delta) {
+    void renderTrail(float delta, SpriteBatch batch) {
+        batch.setProjectionMatrix(viewport.getCamera().combined);
         Iterator<TrailDot> iterator = trailDots.iterator();
         while (iterator.hasNext()) {
             TrailDot trailDot = iterator.next();
@@ -196,6 +202,10 @@ public abstract class BaseScreen implements Screen {
             skeleton.setPosition(x, y);
             Gdx.app.log("BaseScreen", skeleton.getData().getName() + " skeleton position set to x=" + x + " y=" + y);
         }
+    }
+
+    public Stage getStage() {
+        return stage;
     }
 }
 

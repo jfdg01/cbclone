@@ -1,14 +1,20 @@
 package com.kandclay.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
 import com.kandclay.utils.HairColor;
 import com.kandclay.utils.ScreenType;
+
+import javax.swing.text.View;
 
 public class ConfigurationScreen extends BaseScreen {
     private Slider volumeSlider;
@@ -17,6 +23,9 @@ public class ConfigurationScreen extends BaseScreen {
     private TextButton coinColorButton;
     private HairColor currentHairColor;
     private boolean isYellowCoin;
+    private Stage stage;
+    private Viewport viewport;
+    private SpriteBatch batch;
 
     public ConfigurationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -26,6 +35,10 @@ public class ConfigurationScreen extends BaseScreen {
     @Override
     public void show() {
         super.show();
+
+        viewport = new ScreenViewport();
+        stage = new Stage(viewport);
+        batch = new SpriteBatch();
 
         Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
         float savedVolume = configManager.getPreference("volume", Constants.Audio.DEFAULT_VOLUME);
@@ -94,12 +107,12 @@ public class ConfigurationScreen extends BaseScreen {
         super.render(delta);
 
         viewport.apply();
-        batch.setProjectionMatrix(camera.combined);
+        batch.setProjectionMatrix(viewport.getCamera().combined);
 
         batch.begin();
         stage.act(delta);
         stage.draw();
-        renderTrail(delta);
+        renderTrail(delta, batch);
         batch.end();
     }
 

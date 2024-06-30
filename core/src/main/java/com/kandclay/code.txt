@@ -1,739 +1,18 @@
 
 
 
-
-
-public class Main extends ApplicationAdapter {
-    private OrthographicCamera camera;
-    private FitViewport viewport;
-    private MyAssetManager assetManager;
-    private AudioManager audioManager;
-    private ConfigurationManager configManager;
-    private ScreenManager screenManager;
-    private SpriteSheetAnimationHandler spriteSheetAnimationHandler;
-    private SpineAnimationHandler spineAnimationHandler;
-
-    @Override
-    public void create() {
-        camera = new OrthographicCamera();
-        viewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT, camera);
-        viewport.apply();
-
-        configManager = ConfigurationManager.getInstance();
-        assetManager = MyAssetManager.getInstance();
-        audioManager = AudioManager.getInstance();
-        screenManager = new ScreenManager();
-        spriteSheetAnimationHandler = new SpriteSheetAnimationHandler();
-        spineAnimationHandler = new SpineAnimationHandler();
-
-        loadInitialAssets();
-        screenManager.setScreen(ScreenType.MENU);
-    }
-
-    private void loadInitialAssets() {
-        assetManager.load(Constants.Skin.JSON, Skin.class);
-        assetManager.load(Constants.MainMenuScreen.ATLAS, TextureAtlas.class);
-        assetManager.load(Constants.TrailDot.ATLAS, TextureAtlas.class);
-        assetManager.load(Constants.MainAnimationScreen.YellowCoin.ATLAS, TextureAtlas.class);
-        assetManager.load(Constants.MainAnimationScreen.RedCoin.ATLAS, TextureAtlas.class);
-        assetManager.load(Constants.Background.PATH, Texture.class);
-        assetManager.load(Constants.MainAnimationScreen.ATLAS, TextureAtlas.class);
-
-        // Load bitmap font
-        assetManager.load(Constants.Font.FONT_FNT, BitmapFont.class);
-
-        assetManager.finishLoading();
-        addFontsToSkin();
-    }
-
-
-    private void addFontsToSkin() {
-        Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
-        BitmapFont customFont = assetManager.get(Constants.Font.FONT_FNT, BitmapFont.class);
-        skin.add(Constants.Font.FONT, customFont, BitmapFont.class);
-
-        Label.LabelStyle customLabelStyle = new Label.LabelStyle();
-        customLabelStyle.font = customFont;
-        skin.add(Constants.Font.LABEL, customLabelStyle);
-
-        // Add ButtonStyle
-        TextButton.TextButtonStyle customButtonStyle = new TextButton.TextButtonStyle();
-        customButtonStyle.font = customFont;
-        customButtonStyle.up = skin.getDrawable("default-rect");
-        customButtonStyle.down = skin.getDrawable("default-rect-down");
-        customButtonStyle.checked = skin.getDrawable("default-rect");
-        skin.add(Constants.Font.BUTTON, customButtonStyle);
-    }
-
-    @Override
-    public void render() {
-        screenManager.render(Gdx.graphics.getDeltaTime());
-    }
-
-    @Override
-    public void resize(int width, int height) {
-        viewport.update(width, height);
-        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-        Gdx.app.log("Main", "Resizing to: " + width + "x" + height);
-        screenManager.resize(width, height);
-    }
-
-    @Override
-    public void pause() {
-        screenManager.pause();
-    }
-
-    @Override
-    public void resume() {
-        screenManager.resume();
-    }
-
-    @Override
-    public void dispose() {
-        if (screenManager != null) {
-            screenManager.dispose();
-        }
-        if (assetManager != null) {
-            assetManager.dispose();
-        }
-        if (audioManager != null) {
-            audioManager.dispose();
-        }
-    }
-}
-
-
-
-public class AnimatedActor extends Actor {
-    private Animation<TextureRegion> animation;
-    private float stateTime;
-    private float targetX, targetY;
-
-    public AnimatedActor(Animation<TextureRegion> animation) {
-        this.animation = animation;
-        this.stateTime = 0f;
-        TextureRegion initialFrame = animation.getKeyFrame(0);
-        setBounds(getX(), getY(), initialFrame.getRegionWidth(), initialFrame.getRegionHeight());
-        setVisible(false); // Initially set to not visible
-    }
-
-    public void setAnimation(Animation<TextureRegion> newAnimation) {
-        this.animation = newAnimation;
-        this.stateTime = 0f;
-        TextureRegion initialFrame = newAnimation.getKeyFrame(0);
-        setBounds(getX(), getY(), initialFrame.getRegionWidth(), initialFrame.getRegionHeight());
-    }
-
-    public void setTargetPosition(float x, float y) {
-        this.targetX = x;
-        this.targetY = y;
-    }
-
-    @Override
-    public void act(float delta) {
-        super.act(delta);
-        stateTime += delta;
-
-        // Interpolate to target position
-        float newX = getX() + (targetX - getX()) * 0.1f;
-        float newY = getY() + (targetY - getY()) * 0.1f;
-        setPosition(newX, newY);
-    }
-
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-        if (!isVisible()) return; // Only draw if visible
-        super.draw(batch, parentAlpha);
-        TextureRegion currentFrame = animation.getKeyFrame(stateTime, true);
-        batch.draw(currentFrame, getX(), getY(), getWidth(), getHeight());
-    }
-}
-
-
-
-public class BaseActor extends Actor {
-    private TextureRegion textureRegion;
-
-    public BaseActor(Texture texture) {
-        this.textureRegion = new TextureRegion(texture);
-        setBounds(getX(), getY(), textureRegion.getRegionWidth(), textureRegion.getRegionHeight());
-    }
-
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-        super.draw(batch, parentAlpha);
-        batch.setColor(getColor().r, getColor().g, getColor().b, getColor().a * parentAlpha);
-        if (isVisible()) {
-            batch.draw(textureRegion, getX(), getY(), getOriginX(), getOriginY(), getWidth(), getHeight(),
-                getScaleX(), getScaleY(), getRotation());
-        }
-    }
-
-    @Override
-    public void act(float delta) {
-        super.act(delta);
-        // Any additional behavior for BaseActor can be added here
-    }
-
-    @Override
-    protected void positionChanged() {
-        super.positionChanged();
-        // Update bounds or any other properties dependent on position
-    }
-
-    @Override
-    protected void sizeChanged() {
-        super.sizeChanged();
-        // Update bounds or any other properties dependent on size
-    }
-
-    public void dispose() {
-        if (textureRegion.getTexture() != null) {
-            textureRegion.getTexture().dispose();
-        }
-    }
-}
-
-
-public class SpineAnimatedActor extends Actor {
-    private Skeleton skeleton;
-    private AnimationState state;
-    private SkeletonRenderer renderer;
-
-    public SpineAnimatedActor(Skeleton skeleton, AnimationState state) {
-        this.skeleton = skeleton;
-        this.state = state;
-        this.renderer = new SkeletonRenderer();
-        this.renderer.setPremultipliedAlpha(true);
-    }
-
-    @Override
-    public void act(float delta) {
-        super.act(delta);
-        state.update(delta);
-        state.apply(skeleton);
-        skeleton.updateWorldTransform();
-    }
-
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-        super.draw(batch, parentAlpha);
-        batch.setColor(getColor().r, getColor().g, getColor().b, getColor().a * parentAlpha);
-        renderer.draw(batch, skeleton);
-    }
-
-    public void setSkeletonPosition(float x, float y) {
-        skeleton.setPosition(x, y);
-    }
-
-    public void setAnimation(String animationName, boolean loop) {
-        state.setAnimation(0, animationName, loop);
-    }
-
-    public Skeleton getSkeleton() {
-        return skeleton;
-    }
-
-    public void setSkeleton(Skeleton skeleton) {
-        this.skeleton = skeleton;
-    }
-
-    public AnimationState getAnimationState() {
-        return state;
-    }
-
-    public void setAnimationState(AnimationState state) {
-        this.state = state;
-    }
-
-    public SkeletonRenderer getRenderer() {
-        return renderer;
-    }
-
-    public void setRenderer(SkeletonRenderer renderer) {
-        this.renderer = renderer;
-    }
-}
-
-
-
-public class InputHandler extends InputAdapter {
-
-    @Override
-    public boolean keyDown(int keycode) {
-        // Handle key press event
-        switch (keycode) {
-            case Input.Keys.UP:
-                // Handle up key
-                break;
-            case Input.Keys.DOWN:
-                // Handle down key
-                break;
-            case Input.Keys.LEFT:
-                // Handle left key
-                break;
-            case Input.Keys.RIGHT:
-                // Handle right key
-                break;
-            case Input.Keys.ESCAPE:
-                // Handle escape key
-                break;
-            default:
-                break;
-        }
-        return true; // Return true to indicate the event was handled
-    }
-
-    @Override
-    public boolean keyUp(int keycode) {
-        // Handle key release event
-        return true;
-    }
-
-    @Override
-    public boolean keyTyped(char character) {
-        // Handle character typed event
-        return true;
-    }
-
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        // Handle touch down event
-        return true;
-    }
-
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        // Handle touch up event
-        return true;
-    }
-
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        // Handle touch dragged event
-        return true;
-    }
-
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
-        // Handle mouse moved event
-        return true;
-    }
-
-    @Override
-    public boolean scrolled(float amountX, float amountY) {
-        // Handle scrolling event
-        return true;
-    }
-}
-
-
-
-public class SpineAnimationHandler {
-    private MyAssetManager assetManager;
-
-    public SpineAnimationHandler() {
-        this.assetManager = MyAssetManager.getInstance();
-    }
-
-    public Skeleton createSkeleton(String atlasPath, String skeletonPath) {
-        TextureAtlas atlas = assetManager.get(atlasPath, TextureAtlas.class);
-        SkeletonJson json = new SkeletonJson(atlas);
-        SkeletonData skeletonData = json.readSkeletonData(Gdx.files.internal(skeletonPath));
-        Skeleton skeleton = new Skeleton(skeletonData);
-        if (skeleton.getData().getSkins() != null) {
-            skeleton.setSkin(skeleton.getData().getSkins().first().getName());
-        }
-        return skeleton;
-    }
-
-    public AnimationState createAnimationState(Skeleton skeleton) {
-        AnimationStateData stateData = new AnimationStateData(skeleton.getData());
-        return new AnimationState(stateData);
-    }
-}
-
-
-
-
-public class SpriteSheetAnimationHandler {
-    private MyAssetManager assetManager;
-
-    public SpriteSheetAnimationHandler() {
-        this.assetManager = MyAssetManager.getInstance();
-    }
-
-    public Animation<TextureRegion> createAnimationFromAssetManager(String regionName) {
-        String name = "sprites/anim/" + regionName + ".png";
-        Texture texture = assetManager.get(name, Texture.class);
-
-        int frameWidth = texture.getWidth() / Constants.SpriteAnimationSettings.NUM_COLS;
-        int frameHeight = texture.getHeight() / Constants.SpriteAnimationSettings.NUM_ROWS;
-
-        TextureRegion[][] tmpFrames = TextureRegion.split(texture, frameWidth, frameHeight);
-        TextureRegion[] animationFrames = new TextureRegion[Constants.SpriteAnimationSettings.NUM_ROWS * Constants.SpriteAnimationSettings.NUM_COLS];
-
-        int index = 0;
-        for (int i = 0; i < Constants.SpriteAnimationSettings.NUM_ROWS; i++) {
-            for (int j = 0; j < Constants.SpriteAnimationSettings.NUM_COLS; j++) {
-                animationFrames[index++] = tmpFrames[i][j];
-            }
-        }
-
-        return new Animation<TextureRegion>(Constants.SpriteAnimationSettings.FRAME_DURATION, animationFrames);
-    }
-
-    // Additional helper method to handle animations created by hand
-    public Animation<TextureRegion> createAnimationFromCustomFrames(TextureRegion[] frames, float frameDuration) {
-        return new Animation<TextureRegion>(frameDuration, frames);
-    }
-}
-
-
-
-
-public class AudioManager implements Disposable {
-    private static AudioManager instance;
-
-    private Map<String, Sound> soundMap;
-    private Map<String, Music> musicMap;
-    private Music currentMusic;
-
-    private float volume;
-
-    // Private constructor to prevent instantiation
-    private AudioManager() {
-        soundMap = new HashMap<>();
-        musicMap = new HashMap<>();
-        volume = Constants.Audio.DEFAULT_VOLUME; // Default volume
-    }
-
-    // Thread-safe method to get the singleton instance
-    public static synchronized AudioManager getInstance() {
-        if (instance == null) {
-            instance = new AudioManager();
-        }
-        return instance;
-    }
-
-    // Load a sound file
-    public void loadSound(String fileName) {
-        if (!soundMap.containsKey(fileName)) {
-            Sound sound = Gdx.audio.newSound(Gdx.files.internal(fileName));
-            soundMap.put(fileName, sound);
-        }
-    }
-
-    // Play a sound file
-    public void playSound(String fileName) {
-        Sound sound = soundMap.get(fileName);
-        if (sound != null) {
-            sound.play(volume);
-        } else {
-            throw new RuntimeException("Sound not loaded: " + fileName);
-        }
-    }
-
-    // Stop a sound file
-    public void stopSound(String fileName) {
-        Sound sound = soundMap.get(fileName);
-        if (sound != null) {
-            sound.stop();
-        } else {
-            throw new RuntimeException("Sound not loaded: " + fileName);
-        }
-    }
-
-    // Load a music file
-    public void loadMusic(String fileName) {
-        if (!musicMap.containsKey(fileName)) {
-            Music music = Gdx.audio.newMusic(Gdx.files.internal(fileName));
-            musicMap.put(fileName, music);
-        }
-    }
-
-    // Play a music file
-    public void playMusic(String fileName, boolean looping) {
-        if (currentMusic != null) {
-            currentMusic.stop();
-        }
-        Music music = musicMap.get(fileName);
-        if (music != null) {
-            music.setLooping(looping);
-            music.setVolume(volume);
-            music.play();
-            currentMusic = music;
-        } else {
-            throw new RuntimeException("Music not loaded: " + fileName);
-        }
-    }
-
-    // Stop the current music
-    public void stopMusic() {
-        if (currentMusic != null) {
-            currentMusic.stop();
-            currentMusic = null;
-        }
-    }
-
-    // Set volume for sound effects and current music
-    public void setVolume(float volume) {
-        this.volume = volume;
-        if (currentMusic != null) {
-            currentMusic.setVolume(volume);
-        }
-    }
-
-    // Get volume for sound effects
-    public float getVolume() {
-        return volume;
-    }
-
-    // Dispose of all sounds and music
-    @Override
-    public void dispose() {
-        for (Sound sound : soundMap.values()) {
-            sound.dispose();
-        }
-        soundMap.clear();
-
-        for (Music music : musicMap.values()) {
-            music.dispose();
-        }
-        musicMap.clear();
-
-        if (currentMusic != null) {
-            currentMusic.dispose();
-            currentMusic = null;
-        }
-    }
-}
-
-
-public class ConfigurationManager {
-    private static ConfigurationManager instance;
-    private Preferences preferences;
-
-    // Private constructor to prevent instantiation
-    private ConfigurationManager() {
-        preferences = Gdx.app.getPreferences("config");
-//        if (!preferences.contains("width")) {
-//            preferences.putInteger("width", Constants.General.WIDTH);
-//            preferences.flush();
-//        }
-//        if (!preferences.contains("height")) {
-//            preferences.putInteger("height", Constants.General.HEIGHT);
-//            preferences.flush();
-//        }
-    }
-
-    // Thread-safe method to get the singleton instance
-    public static synchronized ConfigurationManager getInstance() {
-        if (instance == null) {
-            instance = new ConfigurationManager();
-        }
-        return instance;
-    }
-
-    // Method to get a preference value with a default
-    public String getPreference(String key, String defaultValue) {
-        return preferences.getString(key, defaultValue);
-    }
-
-    public int getPreference(String key, int defaultValue) {
-        return preferences.getInteger(key, defaultValue);
-    }
-
-    public boolean getPreference(String key, boolean defaultValue) {
-        return preferences.getBoolean(key, defaultValue);
-    }
-
-    public float getPreference(String key, float defaultValue) {
-        return preferences.getFloat(key, defaultValue);
-    }
-
-    public void setPreference(String key, String value) {
-        preferences.putString(key, value);
-        preferences.flush();  // Ensure changes are saved
-    }
-
-    public void setPreference(String key, int value) {
-        preferences.putInteger(key, value);
-        preferences.flush();  // Ensure changes are saved
-    }
-
-    public void setPreference(String key, boolean value) {
-        preferences.putBoolean(key, value);
-        preferences.flush();  // Ensure changes are saved
-    }
-
-    public void setPreference(String key, float value) {
-        preferences.putFloat(key, value);
-        preferences.flush();  // Ensure changes are saved
-    }
-
-    // Method to check if a preference exists
-    public boolean hasPreference(String key) {
-        return preferences.contains(key);
-    }
-
-    // Method to remove a preference
-    public void removePreference(String key) {
-        preferences.remove(key);
-        preferences.flush();  // Ensure changes are saved
-    }
-
-    // Method to clear all preferences
-    public void clearPreferences() {
-        preferences.clear();
-        preferences.flush();  // Ensure changes are saved
-    }
-
-    // Method to handle errors in preferences management
-    public void handlePreferenceError(String key, Exception e) {
-        System.err.println("Error accessing preference: " + key);
-        e.printStackTrace();
-    }
-}
-
-
-
-public class MyAssetManager implements Disposable {
-    private static MyAssetManager instance;
-    private final AssetManager assetManager;
-
-    // Private constructor to prevent instantiation
-    private MyAssetManager() {
-        assetManager = new AssetManager();
-    }
-
-    // Thread-safe method to get the singleton instance
-    public static synchronized MyAssetManager getInstance() {
-        if (instance == null) {
-            instance = new MyAssetManager();
-        }
-        return instance;
-    }
-
-    // Load an asset with the given file name and type
-    public synchronized void load(String asset, Class<?> type) {
-        if (!assetManager.isLoaded(asset)) {
-            assetManager.load(asset, type);
-        }
-    }
-
-    // Get a loaded asset
-    public synchronized <T> T get(String asset, Class<T> type) {
-        if (assetManager.isLoaded(asset)) {
-            return assetManager.get(asset, type);
-        } else {
-            throw new RuntimeException("Asset not loaded: " + asset);
-        }
-    }
-
-    // Finish loading all assets
-    public void finishLoading() {
-        assetManager.finishLoading();
-    }
-
-    // Check if all assets are loaded
-    public boolean update() {
-        return assetManager.update();
-    }
-
-    // Get the progress of asset loading (between 0 and 1)
-    public float getProgress() {
-        return assetManager.getProgress();
-    }
-
-    // Dispose of the asset manager and all its assets
-    @Override
-    public void dispose() {
-        assetManager.dispose();
-    }
-}
-
-
-public class ScreenManager {
-    private MyAssetManager assetManager;
-    private AudioManager audioManager;
-    private ConfigurationManager configManager;
-    private BaseScreen currentScreen;
-    private SpriteSheetAnimationHandler spriteSheetAnimationHandler;
-    private SpineAnimationHandler spineAnimationHandler;
-
-    public ScreenManager() {
-        this.assetManager = MyAssetManager.getInstance();
-        this.audioManager = AudioManager.getInstance();
-        this.configManager = ConfigurationManager.getInstance();
-        this.spriteSheetAnimationHandler = new SpriteSheetAnimationHandler();
-        this.spineAnimationHandler = new SpineAnimationHandler();
-    }
-
-    public void setScreen(ScreenType screenType) {
-        if (currentScreen != null) {
-            currentScreen.dispose();
-        }
-        switch (screenType) {
-            case MENU:
-                currentScreen = new MainMenuScreen(spineAnimationHandler, this);
-                break;
-            case GAME:
-                currentScreen = new MainAnimationScreen(spineAnimationHandler, this);
-                break;
-            case OPTIONS:
-                currentScreen = new ConfigurationScreen(spineAnimationHandler, this);
-                break;
-        }
-        currentScreen.show();
-    }
-
-    public void render(float delta) {
-        if (currentScreen != null) {
-            currentScreen.render(delta);
-        }
-    }
-
-    public void resize(int width, int height) {
-        if (currentScreen != null) {
-            currentScreen.resize(width, height);
-        }
-    }
-
-    public void pause() {
-        if (currentScreen != null) {
-            currentScreen.pause();
-        }
-    }
-
-    public void resume() {
-        if (currentScreen != null) {
-            currentScreen.resume();
-        }
-    }
-
-    public void dispose() {
-        if (currentScreen != null) {
-            currentScreen.dispose();
-        }
-    }
-}
-
-
-
-
 public abstract class BaseScreen implements Screen {
-    protected Stage stage;
     protected MyAssetManager assetManager;
     protected AudioManager audioManager;
     protected SpineAnimationHandler spineAnimationHandler;
     protected ConfigurationManager configManager;
     protected ScreenManager screenManager;
-    protected OrthographicCamera camera;
-    protected FitViewport viewport;
     private SnapshotArray<TrailDot> trailDots;
     private int trailDotCount = 0;
-    protected SpriteBatch batch;
+    private SpriteBatch batch;
+    private Camera camera;
+    private Viewport viewport;
+    private Stage stage;
 
     public BaseScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         this.assetManager = MyAssetManager.getInstance();
@@ -743,8 +22,8 @@ public abstract class BaseScreen implements Screen {
         this.screenManager = screenManager;
 
         // Initialize camera and viewport
-        this.camera = new OrthographicCamera();
-        this.viewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT, camera);
+        this.viewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+        this.camera = viewport.getCamera();
 
         this.stage = new Stage(viewport);
         this.trailDots = new SnapshotArray<TrailDot>();
@@ -756,6 +35,7 @@ public abstract class BaseScreen implements Screen {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
                 createTrailDot(x, y);
+                Gdx.app.log("BaseScreen", "Mouse moved at x=" + x + " y=" + y);
                 return true;
             }
         });
@@ -776,7 +56,8 @@ public abstract class BaseScreen implements Screen {
         clearScreen();
     }
 
-    void renderTrail(float delta) {
+    void renderTrail(float delta, SpriteBatch batch) {
+        batch.setProjectionMatrix(viewport.getCamera().combined);
         Iterator<TrailDot> iterator = trailDots.iterator();
         while (iterator.hasNext()) {
             TrailDot trailDot = iterator.next();
@@ -895,7 +176,12 @@ public abstract class BaseScreen implements Screen {
             Gdx.app.log("BaseScreen", skeleton.getData().getName() + " skeleton position set to x=" + x + " y=" + y);
         }
     }
+
+    public Stage getStage() {
+        return stage;
+    }
 }
+
 
 
 
@@ -906,6 +192,9 @@ public class ConfigurationScreen extends BaseScreen {
     private TextButton coinColorButton;
     private HairColor currentHairColor;
     private boolean isYellowCoin;
+    private Stage stage;
+    private Viewport viewport;
+    private SpriteBatch batch;
 
     public ConfigurationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -915,6 +204,10 @@ public class ConfigurationScreen extends BaseScreen {
     @Override
     public void show() {
         super.show();
+
+        viewport = new ScreenViewport();
+        stage = new Stage(viewport);
+        batch = new SpriteBatch();
 
         Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
         float savedVolume = configManager.getPreference("volume", Constants.Audio.DEFAULT_VOLUME);
@@ -983,12 +276,12 @@ public class ConfigurationScreen extends BaseScreen {
         super.render(delta);
 
         viewport.apply();
-        batch.setProjectionMatrix(camera.combined);
+        batch.setProjectionMatrix(viewport.getCamera().combined);
 
         batch.begin();
         stage.act(delta);
         stage.draw();
-        renderTrail(delta);
+        renderTrail(delta, batch);
         batch.end();
     }
 
@@ -1028,6 +321,10 @@ public class MainAnimationScreen extends BaseScreen {
     private ShapeRenderer shapeRenderer;
     private Texture backgroundTexture;
     private TextButton swapSkinsButton;  // New button to swap skins
+    private Stage stage;
+    private Camera camera;
+    private Viewport mainViewport;
+    private SpriteBatch batch;
 
     public MainAnimationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -1036,7 +333,10 @@ public class MainAnimationScreen extends BaseScreen {
 
     @Override
     public void show() {
-        super.show();
+        mainViewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+        camera = mainViewport.getCamera();
+        stage = new Stage(mainViewport);
+        batch = new SpriteBatch();
 
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
@@ -1147,7 +447,7 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+        mainViewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         stage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
 
@@ -1165,7 +465,7 @@ public class MainAnimationScreen extends BaseScreen {
         coinState = spineAnimationHandler.createAnimationState(coinSkeleton);
 
         setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+        setSkeletonPosition(coinSkeleton, mainViewport.getWorldWidth() / 2, mainViewport.getWorldHeight() / 2);
 
         coinState.setAnimation(0, "animation", true);
         coinState.getCurrent(0).setTrackTime(stateTime);
@@ -1185,7 +485,7 @@ public class MainAnimationScreen extends BaseScreen {
         buttonState = spineAnimationHandler.createAnimationState(buttonSkeleton);
 
         setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(buttonSkeleton, 0, viewport.getWorldHeight());
+        setSkeletonPosition(buttonSkeleton, 0, mainViewport.getWorldHeight());
 
         playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_1X_NAME, "1x/pressed", 1f);
     }
@@ -1292,7 +592,7 @@ public class MainAnimationScreen extends BaseScreen {
 
     @Override
     public void render(float delta) {
-        super.render(delta);
+        clearScreen();
 
         if (isLooping) {
             coinState.update(delta * speedMultiplier);
@@ -1305,11 +605,11 @@ public class MainAnimationScreen extends BaseScreen {
         buttonState.apply(buttonSkeleton);
         buttonSkeleton.updateWorldTransform();
 
-        viewport.apply();
+        mainViewport.apply();
         batch.setProjectionMatrix(camera.combined);
 
         batch.begin();
-        batch.draw(backgroundTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+        batch.draw(backgroundTexture, 0, 0, mainViewport.getWorldWidth(), mainViewport.getWorldHeight());
         // Draw the coin animation
         renderer.draw(batch, coinSkeleton);
         // Draw the button animations
@@ -1318,7 +618,7 @@ public class MainAnimationScreen extends BaseScreen {
         stage.act(delta);
         stage.draw();
         // Draw the trail
-        super.renderTrail(delta);
+        super.renderTrail(delta, batch);
         batch.end();
 
         // Render debug bounds
@@ -1343,14 +643,14 @@ public class MainAnimationScreen extends BaseScreen {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        viewport.update(width, height, true);
+        mainViewport.update(width, height, true);
         stage.getViewport().update(width, height, true);
 
         setSkeletonScale(coinSkeleton, Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(coinSkeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+        setSkeletonPosition(coinSkeleton, mainViewport.getWorldWidth() / 2, mainViewport.getWorldHeight() / 2);
 
         setSkeletonScale(buttonSkeleton, Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(buttonSkeleton, 0, viewport.getWorldHeight());
+        setSkeletonPosition(buttonSkeleton, 0, mainViewport.getWorldHeight());
     }
 
     @Override
@@ -1372,6 +672,10 @@ public class MainMenuScreen extends BaseScreen {
     private Texture backgroundTexture;
     private ShapeRenderer shapeRenderer;
     private boolean isInitialAnimationFinished = false;
+    private Viewport mainViewport;
+    private Viewport backgroundViewport;
+    private SpriteBatch batch;
+    private Stage stage;
 
     public MainMenuScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -1380,6 +684,10 @@ public class MainMenuScreen extends BaseScreen {
     @Override
     public void show() {
         super.show();
+
+        mainViewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+        backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+        batch = new SpriteBatch();
 
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
@@ -1395,6 +703,7 @@ public class MainMenuScreen extends BaseScreen {
         hoverStates.put(Constants.MainMenuScreen.BUTTON_QUIT_NAME, false);
         hoverStates.put(Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, false);
 
+        stage = new Stage(mainViewport, batch);
         stage.addListener(new InputListener() {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
@@ -1424,7 +733,7 @@ public class MainMenuScreen extends BaseScreen {
         state = spineAnimationHandler.createAnimationState(skeleton);
 
         setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE); // Adjust the percentages as needed
-        setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+        setSkeletonPosition(skeleton, mainViewport.getWorldWidth() / 2, mainViewport.getWorldHeight() / 2);
         state.setAnimation(0, "animation", false);
 
         state.addListener(new AnimationState.AnimationStateListener() {
@@ -1562,18 +871,26 @@ public class MainMenuScreen extends BaseScreen {
 
     @Override
     public void render(float delta) {
-        super.render(delta);
+        clearScreen();
 
         state.update(delta);
         state.apply(skeleton);
         skeleton.updateWorldTransform();
+        // super.getStage().act();
 
-        viewport.apply();
-        batch.setProjectionMatrix(camera.combined);
+        // Render background
+        backgroundViewport.apply();
+        batch.setProjectionMatrix(backgroundViewport.getCamera().combined);
         batch.begin();
-        batch.draw(backgroundTexture, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
+        batch.draw(backgroundTexture, 0, 0, backgroundViewport.getWorldWidth(), backgroundViewport.getWorldHeight());
+        batch.end();
+
+        // Render content
+        mainViewport.apply();
+        batch.setProjectionMatrix(mainViewport.getCamera().combined);
+        batch.begin();
         renderer.draw(batch, skeleton);
-        super.renderTrail(delta);
+        super.renderTrail(delta, batch);
         batch.end();
 
 //        setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
@@ -1581,7 +898,7 @@ public class MainMenuScreen extends BaseScreen {
     }
 
     private void renderDebug() {
-        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.setProjectionMatrix(mainViewport.getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(Color.RED);
         drawDebugBounds(Constants.MainMenuScreen.BUTTON_PLAY_NAME);
@@ -1598,8 +915,14 @@ public class MainMenuScreen extends BaseScreen {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
+
+        mainViewport.update(width, height, true);
+        // mainViewport.getCamera().position.set( mainViewport.getCamera().viewportWidth / 2,  mainViewport.getCamera().viewportHeight / 2, 0);
+        backgroundViewport.update(width, height, true);
+        // backgroundViewport.getCamera().position.set( backgroundViewport.getCamera().viewportWidth / 2,  backgroundViewport.getCamera().viewportHeight / 2, 0);
+        // stage.getViewport().update(width, height, true);
         setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
-        setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+        setSkeletonPosition(skeleton, mainViewport.getWorldWidth() / 2, mainViewport.getWorldHeight() / 2);
     }
 
     @Override
@@ -1609,137 +932,3 @@ public class MainMenuScreen extends BaseScreen {
         shapeRenderer.dispose();
     }
 }
-
-public enum CharacterHeight {
-
-    SHORT, AVERAGE, TALL;
-
-    private static final CharacterHeight[] vals = values();
-
-    public CharacterHeight next() {
-        return vals[(this.ordinal() + 1) % vals.length];
-    }
-}
-
-public class Constants {
-
-    public static class General {
-        public static final int WIDTH = 1080;
-        public static final int HEIGHT = 1080;
-        public static final String TITLE = "K and Clay";
-    }
-
-    public static class SpriteAnimationSettings {
-        public static final int NUM_COLS = 28; // Number of columns in the sprite sheet
-        public static final int NUM_ROWS = 28; // Number of rows in the sprite sheet
-        public static final float FRAME_DURATION = 5f / 100f; // Duration of each frame
-    }
-
-    public static class UIButtons {
-        public static final int PADDING = 5;
-        public static final int SLIDER_WIDTH = 300;
-        public static final int CONTROL_BUTTON_HEIGHT = 50;
-        public static final int BACK_BUTTON_WIDTH = 150;
-        public static final int CONTROL_BUTTON_WIDTH = 300;
-    }
-
-    public static class MainAnimationScreen {
-        public static final String BUTTON_1X_NAME = "1x";
-        public static final String BUTTON_2X_NAME = "2x";
-        public static final String BUTTON_3X__NAME = "3x";
-        public static final String ATLAS = "spine/speedButtons.atlas";
-        public static final String JSON = "spine/speedButtons.json";
-        public static final float COIN_WIDTH_PERCENTAGE = 0.4f;
-        public static final float COIN_HEIGHT_PERCENTAGE = 0.4f;
-        public static final float BUTTONS_WIDTH_PERCENTAGE = 0.3f;
-        public static final float BUTTONS_HEIGHT_PERCENTAGE = 0.3f;
-
-        public static class YellowCoin {
-            public static final String ATLAS = "spine/coin-yellow.atlas";
-            public static final String JSON = "spine/coin-yellow.json";
-        }
-
-        public static class RedCoin {
-            public static final String ATLAS = "spine/coin-red.atlas";
-            public static final String JSON = "spine/coin-red.json";
-        }
-    }
-
-    public static class MainMenuScreen {
-        public static final String ATLAS = "spine/menu.atlas";
-        public static final String JSON = "spine/menu.json";
-        public static final String BUTTON_PLAY_NAME = "play";
-        public static final String BUTTON_QUIT_NAME = "quit";
-        public static final String BUTTON_SETTINGS_NAME = "settings";
-        public static final float SKEL_WIDTH_PERCENTAGE = 1.3f;
-        public static final float SKEL_HEIGHT_PERCENTAGE = 1.3f;
-    }
-
-    public static class Audio {
-        public static final float DEFAULT_VOLUME = 1f;
-    }
-
-    public static class Cursor {
-        public static final int HOTSPOT_X = 0;
-        public static final int HOTSPOT_Y = 0;
-        public static final String IMAGE_PATH = "cursor.png";
-    }
-
-    public static class TrailDot {
-        public static final int NUMBER_OF_COLORS = 360; // Maintain at 360 for full color rotation
-        public static final float SATURATION = 1.0f;
-        public static final float VALUE = 1.0f;
-        public static final float ALPHA = 0.5f;
-        public static final float MIN_SCALE = 0.2f;
-        public static final float MAX_SCALE = 0.5f;
-        public static final int MIN_ROTATION = 0;
-        public static final int MAX_ROTATION = 359;
-        public static final String ATLAS = "spine/trailDot.atlas";
-        public static final String JSON = "spine/trailDot.json";
-    }
-
-    public static class Skin {
-        public static final String JSON = "skin/default/skin/uiskin.json";
-    }
-
-    public static class Sounds {
-        public static final String OOF = "sounds/sound.ogg";
-    }
-
-    public static class Font {
-        public static final String PATH = "fonts/Playground.ttf";
-        public static final String BUTTON = "custom-button";
-        public static final String LABEL = "custom-label";
-        public static final String FONT = "custom-font";
-        public static final String FONT_FNT = "com/badlogic/gdx/utils/lsans-15.fnt";
-    }
-
-    public static class Background {
-        public static final String PATH = "background.jpg";
-    }
-}
-
-public enum GameState {
-    RUNNING,
-    PAUSED,
-    GAME_OVER
-}
-
-
-public enum HairColor {
-    BLONDE, BRUNETTE, REDHEAD;
-
-    private static final HairColor[] vals = values();
-
-    public HairColor next() {
-        return vals[(this.ordinal() + 1) % vals.length];
-    }
-}
-
-
-public enum ScreenType {
-    MENU,
-    GAME,
-    OPTIONS
-}
-
