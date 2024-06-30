@@ -1,35 +1,35 @@
 package com.kandclay.managers;
 
+import com.badlogic.gdx.Gdx;
 import com.kandclay.handlers.SpriteSheetAnimationHandler;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.screens.*;
 import com.kandclay.utils.ScreenType;
 
 public class ScreenManager {
-    private MyAssetManager assetManager;
-    private AudioManager audioManager;
-    private ConfigurationManager configManager;
+
     private BaseScreen currentScreen;
-    private SpriteSheetAnimationHandler spriteSheetAnimationHandler;
-    private SpineAnimationHandler spineAnimationHandler;
+    private final SpriteSheetAnimationHandler spriteSheetAnimationHandler;
+    private final SpineAnimationHandler spineAnimationHandler;
 
     public ScreenManager() {
-        this.assetManager = MyAssetManager.getInstance();
-        this.audioManager = AudioManager.getInstance();
-        this.configManager = ConfigurationManager.getInstance();
+        MyAssetManager.getInstance();
+        AudioManager.getInstance();
+        ConfigurationManager.getInstance();
         this.spriteSheetAnimationHandler = new SpriteSheetAnimationHandler();
         this.spineAnimationHandler = new SpineAnimationHandler();
     }
 
     public void setScreen(ScreenType screenType) {
         if (currentScreen != null) {
+            currentScreen.hide();
             currentScreen.dispose();
         }
         switch (screenType) {
             case MENU:
                 currentScreen = new MainMenuScreen(spineAnimationHandler, this);
                 break;
-            case GAME:
+            case MAIN:
                 currentScreen = new MainAnimationScreen(spineAnimationHandler, this);
                 break;
             case OPTIONS:
@@ -37,6 +37,7 @@ public class ScreenManager {
                 break;
         }
         currentScreen.show();
+        currentScreen.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     public void render(float delta) {

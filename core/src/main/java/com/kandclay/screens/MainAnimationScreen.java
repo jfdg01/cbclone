@@ -25,23 +25,16 @@ import java.util.HashMap;
 
 public class MainAnimationScreen extends BaseScreen {
     private boolean isYellowCoin;
-    private TextButton backButton;
     private Slider slider;
     private TextButton modeButton;
-    private TextButton changeCoinColorButton;
     private boolean isLooping = true;
     private float speedMultiplier = 1f;
     private float lastSliderValue = 0f;
     private Texture backgroundTexture;
-    private TextButton swapSkinsButton;  // New button to swap skins
 
-//    private Stage getStage();
-//    private Camera getCamera();
-//    private Viewport getViewport();
-//    private SpriteBatch getBatch();
-
-    private static final int COIN = 0;
-    private static final int BUTTON = 1;
+    private enum AnimationType {
+        COIN, BUTTON
+    }
 
     public MainAnimationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -58,12 +51,12 @@ public class MainAnimationScreen extends BaseScreen {
         shapeRenderer = new ShapeRenderer();
 
         isYellowCoin = configManager.getPreference("coinColor", true);
-        initializeCoinAnimations(0f);
+        initializeCoinAnimations();
         initializeButtonAnimations();
 
         Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
 
-        backButton = new TextButton("Back to Menu", skin, Constants.Font.BUTTON);
+        TextButton backButton = new TextButton("Back to Menu", skin, Constants.Font.BUTTON);
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -77,8 +70,8 @@ public class MainAnimationScreen extends BaseScreen {
             public void changed(ChangeEvent event, Actor actor) {
                 if (!isLooping) {
                     float progress = slider.getValue();
-                    float animationDuration = states.get(COIN).getCurrent(0).getAnimation().getDuration();
-                    states.get(COIN).getCurrent(0).setTrackTime(progress * animationDuration);
+                    float animationDuration = states.get(AnimationType.COIN.ordinal()).getCurrent(0).getAnimation().getDuration();
+                    states.get(AnimationType.COIN.ordinal()).getCurrent(0).setTrackTime(progress * animationDuration);
                     if (progress != lastSliderValue) {
                         lastSliderValue = progress;
                         System.out.println("Slider changed: " + slider.getValue() + " Mode: Manual");
@@ -95,14 +88,14 @@ public class MainAnimationScreen extends BaseScreen {
                 System.out.println("Mode changed to: " + (isLooping ? "Automatic" : "Manual"));
                 if (isLooping) {
                     modeButton.setText("Switch to Manual Mode");
-                    states.get(COIN).setAnimation(0, "animation", true);
+                    states.get(AnimationType.COIN.ordinal()).setAnimation(0, "animation", true);
                 } else {
                     modeButton.setText("Switch to Automatic Mode");
                 }
             }
         });
 
-        changeCoinColorButton = new TextButton("Change Coin Color", skin, Constants.Font.BUTTON);
+        TextButton changeCoinColorButton = new TextButton("Change Coin Color", skin, Constants.Font.BUTTON);
         changeCoinColorButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -110,7 +103,8 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        swapSkinsButton = new TextButton("Swap Skins", skin, Constants.Font.BUTTON);
+        // New button to swap skins
+        TextButton swapSkinsButton = new TextButton("Swap Skins", skin, Constants.Font.BUTTON);
         swapSkinsButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -169,7 +163,7 @@ public class MainAnimationScreen extends BaseScreen {
     }
 
     private void swapCoinColor() {
-        float currentStateTime = states.get(COIN).getCurrent(0).getTrackTime();
+        float currentStateTime = states.get(AnimationType.COIN.ordinal()).getCurrent(0).getTrackTime();
         isYellowCoin = !isYellowCoin;
         configManager.setPreference("coinColor", isYellowCoin);
         swapCoinAnimation(currentStateTime);
@@ -180,19 +174,19 @@ public class MainAnimationScreen extends BaseScreen {
         String skeletonPath = isYellowCoin ? Constants.MainAnimationScreen.YellowCoin.JSON : Constants.MainAnimationScreen.RedCoin.JSON;
 
         if (isAddOperation) {
-            skeletons.add(COIN, spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
-            states.add(COIN, spineAnimationHandler.createAnimationState(skeletons.get(COIN)));
+            skeletons.add(AnimationType.COIN.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
+            states.add(AnimationType.COIN.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.COIN.ordinal())));
         } else {
-            skeletons.set(COIN, spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
-            states.set(COIN, spineAnimationHandler.createAnimationState(skeletons.get(COIN)));
+            skeletons.set(AnimationType.COIN.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
+            states.set(AnimationType.COIN.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.COIN.ordinal())));
         }
 
-        setSkeletonScale(skeletons.get(COIN), Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);
-        setSkeletonPosition(skeletons.get(COIN), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
+        setSkeletonScale(skeletons.get(AnimationType.COIN.ordinal()), Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);
+        setSkeletonPosition(skeletons.get(AnimationType.COIN.ordinal()), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
 
-        states.get(COIN).setAnimation(0, "animation", true);
-        states.get(COIN).getCurrent(0).setTrackTime(stateTime);
-        states.get(COIN).addListener(new AnimationState.AnimationStateAdapter() {
+        states.get(AnimationType.COIN.ordinal()).setAnimation(0, "animation", true);
+        states.get(AnimationType.COIN.ordinal()).getCurrent(0).setTrackTime(stateTime);
+        states.get(AnimationType.COIN.ordinal()).addListener(new AnimationState.AnimationStateAdapter() {
             @Override
             public void complete(AnimationState.TrackEntry entry) {
                 System.out.println("Animation completed");
@@ -200,8 +194,8 @@ public class MainAnimationScreen extends BaseScreen {
         });
     }
 
-    private void initializeCoinAnimations(float stateTime) {
-        configureCoinAnimation(stateTime, true);
+    private void initializeCoinAnimations() {
+        configureCoinAnimation((float) 0.0, true);
     }
 
     private void swapCoinAnimation(float stateTime) {
@@ -213,40 +207,40 @@ public class MainAnimationScreen extends BaseScreen {
         String atlasPath = Constants.MainAnimationScreen.ATLAS;
         String skeletonPath = Constants.MainAnimationScreen.JSON;
 
-        skeletons.add(BUTTON, spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
-        states.add(BUTTON, spineAnimationHandler.createAnimationState(skeletons.get(BUTTON)));
+        skeletons.add(AnimationType.BUTTON.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
+        states.add(AnimationType.BUTTON.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.BUTTON.ordinal())));
 
-        setSkeletonScale(skeletons.get(BUTTON), Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(skeletons.get(BUTTON), 0, getViewport().getWorldHeight());
+        setSkeletonScale(skeletons.get(AnimationType.BUTTON.ordinal()), Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);
+        setSkeletonPosition(skeletons.get(AnimationType.BUTTON.ordinal()), 0, getViewport().getWorldHeight());
 
-        playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_1X_NAME, "1x/pressed", 1f);
+        playButtonPressAnimation("1x/pressed", 1f);
     }
 
     private void handleHover(float x, float y) {
-        updateHoverState(x, y, Constants.MainAnimationScreen.BUTTON_1X_NAME, BUTTON, 1, "1x/hoverIn", "1x/hoverOut");
-        updateHoverState(x, y, Constants.MainAnimationScreen.BUTTON_2X_NAME, BUTTON, 2, "2x/hoverIn", "2x/hoverOut");
-        updateHoverState(x, y, Constants.MainAnimationScreen.BUTTON_3X__NAME, BUTTON, 3, "3x/hoverIn", "3x/hoverOut");
+        updateHoverState(x, y, Constants.MainAnimationScreen.BUTTON_1X_NAME, AnimationType.BUTTON.ordinal(), 1, "1x/hoverIn", "1x/hoverOut");
+        updateHoverState(x, y, Constants.MainAnimationScreen.BUTTON_2X_NAME, AnimationType.BUTTON.ordinal(), 2, "2x/hoverIn", "2x/hoverOut");
+        updateHoverState(x, y, Constants.MainAnimationScreen.BUTTON_3X__NAME, AnimationType.BUTTON.ordinal(), 3, "3x/hoverIn", "3x/hoverOut");
     }
 
     private void swapSkins() {
-        String currentSkin = skeletons.get(BUTTON).getSkin().getName();
+        String currentSkin = skeletons.get(AnimationType.BUTTON.ordinal()).getSkin().getName();
         String newSkin = currentSkin.equals("Saturated") ? "Accessible" : "Saturated";
-        skeletons.get(BUTTON).setSkin(newSkin);
+        skeletons.get(AnimationType.BUTTON.ordinal()).setSkin(newSkin);
     }
 
     private void handleClick(float x, float y) {
-        if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_1X_NAME, BUTTON)) {
-            playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_1X_NAME, "1x/pressed", 1f);
-        } else if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_2X_NAME, BUTTON)) {
-            playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_2X_NAME, "2x/pressed", 2f);
-        } else if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_3X__NAME, BUTTON)) {
-            playButtonPressAnimation(Constants.MainAnimationScreen.BUTTON_3X__NAME, "3x/pressed", 3f);
+        if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_1X_NAME, AnimationType.BUTTON.ordinal())) {
+            playButtonPressAnimation("1x/pressed", 1f);
+        } else if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_2X_NAME, AnimationType.BUTTON.ordinal())) {
+            playButtonPressAnimation("2x/pressed", 2f);
+        } else if (isHoveringButton(x, y, Constants.MainAnimationScreen.BUTTON_3X__NAME, AnimationType.BUTTON.ordinal())) {
+            playButtonPressAnimation("3x/pressed", 3f);
         }
     }
 
-    private void playButtonPressAnimation(String buttonName, final String animationName, final float speed) {
+    private void playButtonPressAnimation(final String animationName, final float speed) {
         Gdx.app.log("MainAnimationScreen", "Playing button press animation: " + animationName);
-        states.get(BUTTON).setAnimation(4, animationName, false).setListener(new AnimationState.AnimationStateListener() {
+        states.get(AnimationType.BUTTON.ordinal()).setAnimation(4, animationName, false).setListener(new AnimationState.AnimationStateListener() {
             @Override
             public void start(AnimationState.TrackEntry entry) {
             }
@@ -286,15 +280,15 @@ public class MainAnimationScreen extends BaseScreen {
         clearScreen();
 
         if (isLooping) {
-            states.get(COIN).update(delta * speedMultiplier);
+            states.get(AnimationType.COIN.ordinal()).update(delta * speedMultiplier);
         }
 
-        states.get(COIN).apply(skeletons.get(COIN));
-        skeletons.get(COIN).updateWorldTransform();
+        states.get(AnimationType.COIN.ordinal()).apply(skeletons.get(AnimationType.COIN.ordinal()));
+        skeletons.get(AnimationType.COIN.ordinal()).updateWorldTransform();
 
-        states.get(BUTTON).update(delta);
-        states.get(BUTTON).apply(skeletons.get(BUTTON));
-        skeletons.get(BUTTON).updateWorldTransform();
+        states.get(AnimationType.BUTTON.ordinal()).update(delta);
+        states.get(AnimationType.BUTTON.ordinal()).apply(skeletons.get(AnimationType.BUTTON.ordinal()));
+        skeletons.get(AnimationType.BUTTON.ordinal()).updateWorldTransform();
 
         getViewport().apply();
         getBatch().setProjectionMatrix(getCamera().combined);
@@ -302,9 +296,9 @@ public class MainAnimationScreen extends BaseScreen {
         getBatch().begin();
         getBatch().draw(backgroundTexture, 0, 0, getViewport().getWorldWidth(), getViewport().getWorldHeight());
         // Draw the coin animation
-        renderer.draw(getBatch(), skeletons.get(COIN));
+        renderer.draw(getBatch(), skeletons.get(AnimationType.COIN.ordinal()));
         // Draw the button animations
-        renderer.draw(getBatch(), skeletons.get(BUTTON));
+        renderer.draw(getBatch(), skeletons.get(AnimationType.BUTTON.ordinal()));
         // Draw the UI
         getStage().act(delta);
         getStage().draw();
@@ -327,7 +321,7 @@ public class MainAnimationScreen extends BaseScreen {
     }
 
     private void drawDebugBounds(String buttonName) {
-        Rectangle bounds = getButtonBounds(buttonName, BUTTON);
+        Rectangle bounds = getButtonBounds(buttonName, AnimationType.BUTTON.ordinal());
         shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
@@ -337,17 +331,16 @@ public class MainAnimationScreen extends BaseScreen {
         getViewport().update(width, height, true);
         getStage().getViewport().update(width, height, true);
 
-        setSkeletonScale(skeletons.get(COIN), Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(skeletons.get(COIN), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
+        setSkeletonScale(skeletons.get(AnimationType.COIN.ordinal()), Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
+        setSkeletonPosition(skeletons.get(AnimationType.COIN.ordinal()), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
 
-        setSkeletonScale(skeletons.get(BUTTON), Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
-        setSkeletonPosition(skeletons.get(BUTTON), 0, getViewport().getWorldHeight());
+        setSkeletonScale(skeletons.get(AnimationType.BUTTON.ordinal()), Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
+        setSkeletonPosition(skeletons.get(AnimationType.BUTTON.ordinal()), 0, getViewport().getWorldHeight());
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        shapeRenderer.dispose();
     }
 }
 

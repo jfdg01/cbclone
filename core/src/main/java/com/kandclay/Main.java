@@ -22,8 +22,6 @@ import com.kandclay.utils.Constants;
 import com.kandclay.utils.ScreenType;
 
 public class Main extends ApplicationAdapter {
-    private OrthographicCamera camera;
-    private FitViewport viewport;
     private MyAssetManager assetManager;
     private AudioManager audioManager;
     private ConfigurationManager configManager;
@@ -33,9 +31,6 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void create() {
-        camera = new OrthographicCamera();
-        viewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT, camera);
-        viewport.apply();
 
         configManager = ConfigurationManager.getInstance();
         assetManager = MyAssetManager.getInstance();
@@ -90,9 +85,6 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height);
-        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-        Gdx.app.log("Main", "Resizing to: " + width + "x" + height);
         screenManager.resize(width, height);
     }
 

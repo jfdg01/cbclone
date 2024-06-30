@@ -116,10 +116,10 @@ public abstract class BaseScreen implements Screen {
         viewport.update(width, height);
         camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
         stage.getViewport().update(width, height, true);
-        Gdx.app.log("BaseScreen", "Resize: width=" + width + " height=" + height);
-        Gdx.app.log("BaseScreen", "Camera position: x=" + camera.position.x + " y=" + camera.position.y);
-        Gdx.app.log("BaseScreen", "Viewport: worldWidth=" + viewport.getWorldWidth() + " worldHeight=" + viewport.getWorldHeight() + " screenWidth=" + viewport.getScreenWidth() + " screenHeight=" + viewport.getScreenHeight());
-        Gdx.app.log("BaseScreen", "Stage: width=" + stage.getWidth() + " height=" + stage.getHeight());
+//        Gdx.app.log("BaseScreen", "Resize: width=" + width + " height=" + height);
+//        Gdx.app.log("BaseScreen", "Camera position: x=" + camera.position.x + " y=" + camera.position.y);
+//        Gdx.app.log("BaseScreen", "Viewport: worldWidth=" + viewport.getWorldWidth() + " worldHeight=" + viewport.getWorldHeight() + " screenWidth=" + viewport.getScreenWidth() + " screenHeight=" + viewport.getScreenHeight());
+//        Gdx.app.log("BaseScreen", "Stage: width=" + stage.getWidth() + " height=" + stage.getHeight());
     }
 
     @Override
@@ -142,6 +142,9 @@ public abstract class BaseScreen implements Screen {
         stage.dispose();
         if (batch != null) {
             batch.dispose();
+        }
+        if (shapeRenderer != null) {
+            shapeRenderer.dispose();
         }
     }
 
@@ -260,7 +263,7 @@ public abstract class BaseScreen implements Screen {
     protected void setSkeletonPosition(Skeleton skeleton, float x, float y) {
         if (skeleton != null) {
             skeleton.setPosition(x, y);
-            Gdx.app.log("BaseScreen", skeleton.getData().getName() + " skeleton position set to x=" + x + " y=" + y);
+//            Gdx.app.log("BaseScreen", skeleton.getData().getName() + " skeleton position set to x=" + x + " y=" + y);
         }
     }
 
