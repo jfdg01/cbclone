@@ -5,19 +5,18 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.SnapshotArray;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.esotericsoftware.spine.AnimationState;
-import com.esotericsoftware.spine.Skeleton;
-import com.esotericsoftware.spine.SkeletonRenderer;
+import com.esotericsoftware.spine.*;
+import com.esotericsoftware.spine.attachments.RegionAttachment;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.managers.AudioManager;
 import com.kandclay.managers.ConfigurationManager;
@@ -25,7 +24,8 @@ import com.kandclay.managers.MyAssetManager;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
 
-import javax.swing.text.View;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 public abstract class BaseScreen implements Screen {
@@ -34,12 +34,20 @@ public abstract class BaseScreen implements Screen {
     protected SpineAnimationHandler spineAnimationHandler;
     protected ConfigurationManager configManager;
     protected ScreenManager screenManager;
-    private SnapshotArray<TrailDot> trailDots;
+    protected ShapeRenderer shapeRenderer;
+
+    private final SnapshotArray<TrailDot> trailDots;
     private int trailDotCount = 0;
-    private SpriteBatch batch;
-    private Camera camera;
+
+    private final SpriteBatch batch;
+    private final Camera camera;
     private Viewport viewport;
-    private Stage stage;
+    private final Stage stage;
+
+    protected SkeletonRenderer renderer;
+    protected ArrayList<AnimationState> states;
+    protected ArrayList<Skeleton> skeletons;
+    protected HashMap<String, Boolean> hoverStates;
 
     public BaseScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         this.assetManager = MyAssetManager.getInstance();
@@ -48,12 +56,15 @@ public abstract class BaseScreen implements Screen {
         this.spineAnimationHandler = spineAnimationHandler;
         this.screenManager = screenManager;
 
+        this.trailDots = new SnapshotArray<TrailDot>();
+        this.skeletons = new ArrayList<Skeleton>();
+        this.states = new ArrayList<AnimationState>();
+
         // Initialize camera and viewport
         this.viewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
         this.camera = viewport.getCamera();
 
         this.stage = new Stage(viewport);
-        this.trailDots = new SnapshotArray<TrailDot>();
         this.batch = new SpriteBatch();
 
         Gdx.input.setInputProcessor(stage);
@@ -62,7 +73,6 @@ public abstract class BaseScreen implements Screen {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
                 createTrailDot(x, y);
-                Gdx.app.log("BaseScreen", "Mouse moved at x=" + x + " y=" + y);
                 return true;
             }
         });
@@ -197,6 +207,56 @@ public abstract class BaseScreen implements Screen {
         }
     }
 
+    protected boolean isHoveringButton(float x, float y, String buttonName, int pos) {
+        Rectangle buttonBounds = getButtonBounds(buttonName, pos);
+        return buttonBounds.contains(x, y);
+    }
+
+    protected Rectangle getButtonBounds(String buttonName, int pos) {
+        return getRectangle(buttonName, buttonName, skeletons.get(pos));
+    }
+
+    protected void updateHoverState(float x, float y, String buttonName, int pos, int trackIndex, String hoverInAnim, String hoverOutAnim) {
+        boolean isHovered = isHoveringButton(x, y, buttonName, pos);
+        boolean wasHovered = hoverStates.get(buttonName);
+
+        if (isHovered && !wasHovered) {
+            states.get(pos).setAnimation(trackIndex, hoverInAnim, false);
+        } else if (!isHovered && wasHovered) {
+            states.get(pos).setAnimation(trackIndex, hoverOutAnim, false);
+        }
+
+        hoverStates.put(buttonName, isHovered);
+    }
+
+    protected Rectangle getRectangle(String buttonName, String bgSlotName, Skeleton skeleton) {
+        Bone bone = skeleton.findBone(buttonName);
+        if (bone == null) return new Rectangle();
+
+        Slot slot = skeleton.findSlot(bgSlotName);  // Use the background slot
+        if (slot == null || !(slot.getAttachment() instanceof RegionAttachment)) return new Rectangle();
+
+        RegionAttachment attachment = (RegionAttachment) slot.getAttachment();
+        if (attachment == null) return new Rectangle();
+
+        float[] vertices = new float[8];
+        attachment.computeWorldVertices(slot.getBone(), vertices, 0, 2);
+
+        float minX = vertices[0];
+        float minY = vertices[1];
+        float maxX = vertices[0];
+        float maxY = vertices[1];
+
+        for (int i = 2; i < vertices.length; i += 2) {
+            if (vertices[i] < minX) minX = vertices[i];
+            if (vertices[i + 1] < minY) minY = vertices[i + 1];
+            if (vertices[i] > maxX) maxX = vertices[i];
+            if (vertices[i + 1] > maxY) maxY = vertices[i + 1];
+        }
+
+        return new Rectangle(minX, minY, maxX - minX, maxY - minY);
+    }
+
     protected void setSkeletonPosition(Skeleton skeleton, float x, float y) {
         if (skeleton != null) {
             skeleton.setPosition(x, y);
@@ -210,6 +270,14 @@ public abstract class BaseScreen implements Screen {
 
     public Viewport getViewport() {
         return viewport;
+    }
+
+    public void setViewport(Viewport viewport) {
+        this.viewport = viewport;
+    }
+
+    public Camera getCamera() {
+        return camera;
     }
 
     public SpriteBatch getBatch() {
