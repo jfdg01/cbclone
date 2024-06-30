@@ -73,8 +73,8 @@ public class MainMenuScreen extends BaseScreen {
         String atlasPath = Constants.MainMenuScreen.ATLAS;
         String skeletonPath = Constants.MainMenuScreen.JSON;
 
-        skeletons.add(AnimationType.MENU.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
-        states.add(AnimationType.MENU.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.MENU.ordinal())));
+        skeletons.insert(AnimationType.MENU.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
+        states.insert(AnimationType.MENU.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.MENU.ordinal())));
 
         setSkeletonScale(skeletons.get(AnimationType.MENU.ordinal()), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE); // Adjust the percentages as needed
         setSkeletonPosition(skeletons.get(AnimationType.MENU.ordinal()), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
@@ -187,11 +187,12 @@ public class MainMenuScreen extends BaseScreen {
         getBatch().setProjectionMatrix(getViewport().getCamera().combined);
         getBatch().begin();
         renderer.draw(getBatch(), skeletons.get(AnimationType.MENU.ordinal()));
-        super.renderTrail(delta, getBatch());
         getBatch().end();
 
         getStage().act(delta);
         getStage().draw();
+
+        renderTrail(delta, getBatch());
     }
 
     private void renderDebug() {

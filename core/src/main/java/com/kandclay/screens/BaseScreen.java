@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.SnapshotArray;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -45,8 +46,8 @@ public abstract class BaseScreen implements Screen {
     private final Stage stage;
 
     protected SkeletonRenderer renderer;
-    protected ArrayList<AnimationState> states;
-    protected ArrayList<Skeleton> skeletons;
+    protected Array<AnimationState> states;
+    protected Array<Skeleton> skeletons;
     protected HashMap<String, Boolean> hoverStates;
 
     public BaseScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
@@ -57,8 +58,8 @@ public abstract class BaseScreen implements Screen {
         this.screenManager = screenManager;
 
         this.trailDots = new SnapshotArray<TrailDot>();
-        this.skeletons = new ArrayList<Skeleton>();
-        this.states = new ArrayList<AnimationState>();
+        this.skeletons = new Array<Skeleton>();
+        this.states = new Array<AnimationState>();
 
         // Initialize camera and viewport
         this.viewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
@@ -94,6 +95,7 @@ public abstract class BaseScreen implements Screen {
     }
 
     void renderTrail(float delta, SpriteBatch batch) {
+        batch.begin();
         batch.setProjectionMatrix(viewport.getCamera().combined);
         Iterator<TrailDot> iterator = trailDots.iterator();
         while (iterator.hasNext()) {
@@ -109,6 +111,7 @@ public abstract class BaseScreen implements Screen {
                 iterator.remove();
             }
         }
+        batch.end();
     }
 
     @Override
@@ -275,6 +278,7 @@ public abstract class BaseScreen implements Screen {
 
     public void setViewport(Viewport viewport) {
         this.viewport = viewport;
+        this.stage.setViewport(viewport);
     }
 
     public Camera getCamera() {

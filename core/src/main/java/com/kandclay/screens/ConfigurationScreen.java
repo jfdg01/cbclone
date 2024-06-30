@@ -23,9 +23,6 @@ public class ConfigurationScreen extends BaseScreen {
     private TextButton coinColorButton;
     private HairColor currentHairColor;
     private boolean isYellowCoin;
-    private Stage stage;
-    private Viewport viewport;
-    private SpriteBatch batch;
 
     public ConfigurationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -36,9 +33,7 @@ public class ConfigurationScreen extends BaseScreen {
     public void show() {
         super.show();
 
-        viewport = new ScreenViewport();
-        stage = new Stage(viewport);
-        batch = new SpriteBatch();
+        setViewport(new ScreenViewport(getCamera()));
 
         Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
         float savedVolume = configManager.getPreference("volume", Constants.Audio.DEFAULT_VOLUME);
@@ -96,31 +91,28 @@ public class ConfigurationScreen extends BaseScreen {
         table.add(coinColorButton).width(Constants.UIButtons.CONTROL_BUTTON_WIDTH).height(Constants.UIButtons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.UIButtons.PADDING).row();
         table.add(backButton).width(Constants.UIButtons.BACK_BUTTON_WIDTH).height(Constants.UIButtons.CONTROL_BUTTON_HEIGHT).padTop(Constants.UIButtons.PADDING);
 
-        stage.addActor(table);
+        getStage().addActor(table);
 
-        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
-        stage.getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+        getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
 
     @Override
     public void render(float delta) {
         super.render(delta);
 
-        viewport.apply();
-        batch.setProjectionMatrix(viewport.getCamera().combined);
+        getViewport().apply();
+        getBatch().setProjectionMatrix(getViewport().getCamera().combined);
 
-        batch.begin();
-        stage.act(delta);
-        stage.draw();
-        renderTrail(delta, batch);
-        batch.end();
+        getStage().act(delta);
+        getStage().draw();
+
+        renderTrail(delta, getBatch());
     }
 
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        viewport.update(width, height, true);
-        stage.getViewport().update(width, height, true);
+        getViewport().update(width, height, true);
     }
 
     @Override

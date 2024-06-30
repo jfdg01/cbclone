@@ -7,12 +7,17 @@ public class MyAssetManager implements Disposable {
     private static MyAssetManager instance;
     private final AssetManager assetManager;
 
-    // Private constructor to prevent instantiation
+    /**
+     * Private constructor to prevent instantiation
+     */
     private MyAssetManager() {
         assetManager = new AssetManager();
     }
 
-    // Thread-safe method to get the singleton instance
+    /**
+     * Thread-safe method to get the singleton instance
+     * @return the singleton instance of MyAssetManager
+     */
     public static synchronized MyAssetManager getInstance() {
         if (instance == null) {
             instance = new MyAssetManager();
@@ -20,7 +25,7 @@ public class MyAssetManager implements Disposable {
         return instance;
     }
 
-    // Load an asset with the given file name and type
+
     public synchronized void load(String asset, Class<?> type) {
         if (!assetManager.isLoaded(asset)) {
             assetManager.load(asset, type);
@@ -41,12 +46,18 @@ public class MyAssetManager implements Disposable {
         assetManager.finishLoading();
     }
 
-    // Check if all assets are loaded
+    /**
+     * Update the asset manager
+     * @return true if the asset manager is done loading
+     */
     public boolean update() {
         return assetManager.update();
     }
 
-    // Get the progress of asset loading (between 0 and 1)
+    /**
+     * Get the progress of the asset manager
+     * @return the progress of the asset manager
+     */
     public float getProgress() {
         return assetManager.getProgress();
     }

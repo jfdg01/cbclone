@@ -177,8 +177,8 @@ public class MainAnimationScreen extends BaseScreen {
         String skeletonPath = isYellowCoin ? Constants.MainAnimationScreen.YellowCoin.JSON : Constants.MainAnimationScreen.RedCoin.JSON;
 
         if (isAddOperation) {
-            skeletons.add(AnimationType.COIN.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
-            states.add(AnimationType.COIN.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.COIN.ordinal())));
+            skeletons.insert(AnimationType.COIN.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
+            states.insert(AnimationType.COIN.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.COIN.ordinal())));
         } else {
             skeletons.set(AnimationType.COIN.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
             states.set(AnimationType.COIN.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.COIN.ordinal())));
@@ -210,8 +210,8 @@ public class MainAnimationScreen extends BaseScreen {
         String atlasPath = Constants.MainAnimationScreen.ATLAS;
         String skeletonPath = Constants.MainAnimationScreen.JSON;
 
-        skeletons.add(AnimationType.BUTTON.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
-        states.add(AnimationType.BUTTON.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.BUTTON.ordinal())));
+        skeletons.insert(AnimationType.BUTTON.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
+        states.insert(AnimationType.BUTTON.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.BUTTON.ordinal())));
 
         setSkeletonScale(skeletons.get(AnimationType.BUTTON.ordinal()), Constants.MainAnimationScreen.BUTTONS_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.BUTTONS_HEIGHT_PERCENTAGE);
         setSkeletonPosition(skeletons.get(AnimationType.BUTTON.ordinal()), 0, getViewport().getWorldHeight());
@@ -306,11 +306,12 @@ public class MainAnimationScreen extends BaseScreen {
         getBatch().begin();
         renderer.draw(getBatch(), skeletons.get(AnimationType.COIN.ordinal()));
         renderer.draw(getBatch(), skeletons.get(AnimationType.BUTTON.ordinal()));
-        super.renderTrail(delta, getBatch());
         getBatch().end();
 
         getStage().act(delta);
         getStage().draw();
+
+        renderTrail(delta, getBatch());
 
         // Render debug bounds
         // renderDebug();
