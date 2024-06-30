@@ -3,14 +3,12 @@ package com.kandclay.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.utils.viewport.*;
 import com.esotericsoftware.spine.*;
-import com.esotericsoftware.spine.attachments.RegionAttachment;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
@@ -23,7 +21,9 @@ public class MainMenuScreen extends BaseScreen {
     private boolean isInitialAnimationFinished = false;
     private Viewport backgroundViewport;
 
-    private static final int MENU = 0;
+    private enum AnimationType {
+        MENU
+    }
 
     public MainMenuScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
@@ -73,14 +73,14 @@ public class MainMenuScreen extends BaseScreen {
         String atlasPath = Constants.MainMenuScreen.ATLAS;
         String skeletonPath = Constants.MainMenuScreen.JSON;
 
-        skeletons.add(MENU, spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
-        states.add(MENU, spineAnimationHandler.createAnimationState(skeletons.get(MENU)));
+        skeletons.add(AnimationType.MENU.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
+        states.add(AnimationType.MENU.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.MENU.ordinal())));
 
-        setSkeletonScale(skeletons.get(MENU), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE); // Adjust the percentages as needed
-        setSkeletonPosition(skeletons.get(MENU), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
-        states.get(MENU).setAnimation(0, "animation", false);
+        setSkeletonScale(skeletons.get(AnimationType.MENU.ordinal()), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE); // Adjust the percentages as needed
+        setSkeletonPosition(skeletons.get(AnimationType.MENU.ordinal()), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
+        states.get(AnimationType.MENU.ordinal()).setAnimation(0, "animation", false);
 
-        states.get(MENU).addListener(new AnimationState.AnimationStateListener() {
+        states.get(AnimationType.MENU.ordinal()).addListener(new AnimationState.AnimationStateListener() {
             @Override
             public void start(AnimationState.TrackEntry entry) {
             }
@@ -111,24 +111,24 @@ public class MainMenuScreen extends BaseScreen {
     }
 
     private void handleHover(float x, float y) {
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, MENU, 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, MENU, 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, MENU, 3, "Buttons/SettingsHoverIn", "Buttons/SettingsHoverOut");
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, AnimationType.MENU.ordinal(), 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, AnimationType.MENU.ordinal(), 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, AnimationType.MENU.ordinal(), 3, "Buttons/SettingsHoverIn", "Buttons/SettingsHoverOut");
     }
 
     private void handleClick(float x, float y) {
-        if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, MENU)) {
-            playButtonPressAnimation(Constants.MainMenuScreen.BUTTON_PLAY_NAME, "Buttons/PlayPress", ScreenType.GAME);
-        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, MENU)) {
-            playButtonPressAnimation(Constants.MainMenuScreen.BUTTON_QUIT_NAME, "Buttons/QuitPress", null);
-        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, MENU)) {
-            playButtonPressAnimation(Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, "Buttons/SettingsPress", ScreenType.OPTIONS);
+        if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, AnimationType.MENU.ordinal())) {
+            playButtonPressAnimation("Buttons/PlayPress", ScreenType.MAIN);
+        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, AnimationType.MENU.ordinal())) {
+            playButtonPressAnimation("Buttons/QuitPress", null);
+        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, AnimationType.MENU.ordinal())) {
+            playButtonPressAnimation("Buttons/SettingsPress", ScreenType.OPTIONS);
         }
     }
 
-    private void playButtonPressAnimation(String buttonName, final String animationName, final ScreenType screenType) {
+    private void playButtonPressAnimation(final String animationName, final ScreenType screenType) {
         Gdx.app.log("MainMenuScreen", "Playing button press animation: " + animationName);
-        states.get(MENU).setAnimation(4, animationName, false).setListener(new AnimationState.AnimationStateListener() {
+        states.get(AnimationType.MENU.ordinal()).setAnimation(4, animationName, false).setListener(new AnimationState.AnimationStateListener() {
             @Override
             public void start(AnimationState.TrackEntry entry) {
             }
@@ -171,9 +171,9 @@ public class MainMenuScreen extends BaseScreen {
     public void render(float delta) {
         clearScreen();
 
-        states.get(MENU).update(delta);
-        states.get(MENU).apply(skeletons.get(MENU));
-        skeletons.get(MENU).updateWorldTransform();
+        states.get(AnimationType.MENU.ordinal()).update(delta);
+        states.get(AnimationType.MENU.ordinal()).apply(skeletons.get(AnimationType.MENU.ordinal()));
+        skeletons.get(AnimationType.MENU.ordinal()).updateWorldTransform();
 
         // Render background
         backgroundViewport.apply();
@@ -186,7 +186,7 @@ public class MainMenuScreen extends BaseScreen {
         getViewport().apply();
         getBatch().setProjectionMatrix(getViewport().getCamera().combined);
         getBatch().begin();
-        renderer.draw(getBatch(), skeletons.get(MENU));
+        renderer.draw(getBatch(), skeletons.get(AnimationType.MENU.ordinal()));
         super.renderTrail(delta, getBatch());
         getBatch().end();
 
@@ -205,23 +205,21 @@ public class MainMenuScreen extends BaseScreen {
     }
 
     private void drawDebugBounds(String buttonName) {
-        Rectangle bounds = getButtonBounds(buttonName, MENU);
+        Rectangle bounds = getButtonBounds(buttonName, AnimationType.MENU.ordinal());
         shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-
         getViewport().update(width, height, true);
         backgroundViewport.update(width, height, true);
-        setSkeletonScale(skeletons.get(MENU), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
-        setSkeletonPosition(skeletons.get(MENU), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
+        setSkeletonScale(skeletons.get(AnimationType.MENU.ordinal()), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
+        setSkeletonPosition(skeletons.get(AnimationType.MENU.ordinal()), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        shapeRenderer.dispose();
     }
 }

@@ -1,5 +1,6 @@
 package com.kandclay.managers;
 
+import com.badlogic.gdx.Gdx;
 import com.kandclay.handlers.SpriteSheetAnimationHandler;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.screens.*;
@@ -23,13 +24,14 @@ public class ScreenManager {
 
     public void setScreen(ScreenType screenType) {
         if (currentScreen != null) {
+            currentScreen.hide();
             currentScreen.dispose();
         }
         switch (screenType) {
             case MENU:
                 currentScreen = new MainMenuScreen(spineAnimationHandler, this);
                 break;
-            case GAME:
+            case MAIN:
                 currentScreen = new MainAnimationScreen(spineAnimationHandler, this);
                 break;
             case OPTIONS:
@@ -37,6 +39,7 @@ public class ScreenManager {
                 break;
         }
         currentScreen.show();
+        currentScreen.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     public void render(float delta) {

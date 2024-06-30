@@ -2,7 +2,7 @@ package com.kandclay.utils;
 
 public enum ScreenType {
     MENU,
-    GAME,
+    MAIN,
     OPTIONS
 }
 

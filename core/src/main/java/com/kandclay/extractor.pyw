@@ -1,7 +1,7 @@
 import os
 import fnmatch
 
-include_directories = "utils/Constants, utils/GameState, utils/ScreenType, screens/*, managers/AudioManager, managers/MyAssetManager"
+include_directories = "utils/Constants, utils/GameState, utils/ScreenType, screens/*, managers/ScreenManager, managers/MyAssetManager"
 excluded_directories = ""
 
 def extract_code_from_file(file_path):
