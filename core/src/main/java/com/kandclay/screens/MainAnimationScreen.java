@@ -14,6 +14,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.esotericsoftware.spine.*;
 
 import com.kandclay.handlers.SpineAnimationHandler;
@@ -24,13 +26,13 @@ import com.kandclay.utils.ScreenType;
 import java.util.HashMap;
 
 public class MainAnimationScreen extends BaseScreen {
+
     private boolean isYellowCoin;
-    private Slider slider;
-    private TextButton modeButton;
     private boolean isLooping = true;
     private float speedMultiplier = 1f;
     private float lastSliderValue = 0f;
     private Texture backgroundTexture;
+    private Viewport backgroundViewport;
 
     private enum AnimationType {
         COIN, BUTTON
@@ -47,6 +49,7 @@ public class MainAnimationScreen extends BaseScreen {
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
         backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class);
+        backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
 
         shapeRenderer = new ShapeRenderer();
 
@@ -64,7 +67,7 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        slider = new Slider(0, 1, 0.01f, false, skin);
+        final Slider slider = new Slider(0, 1, 0.01f, false, skin);
         slider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -80,7 +83,7 @@ public class MainAnimationScreen extends BaseScreen {
             }
         });
 
-        modeButton = new TextButton("Switch to Manual Mode", skin, Constants.Font.BUTTON);
+        final TextButton modeButton = new TextButton("Switch to Manual Mode", skin, Constants.Font.BUTTON);
         modeButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
@@ -290,21 +293,24 @@ public class MainAnimationScreen extends BaseScreen {
         states.get(AnimationType.BUTTON.ordinal()).apply(skeletons.get(AnimationType.BUTTON.ordinal()));
         skeletons.get(AnimationType.BUTTON.ordinal()).updateWorldTransform();
 
+        // Render background
+        backgroundViewport.apply();
+        getBatch().setProjectionMatrix(backgroundViewport.getCamera().combined);
+        getBatch().begin();
+        getBatch().draw(backgroundTexture, 0, 0, backgroundViewport.getWorldWidth(), backgroundViewport.getWorldHeight());
+        getBatch().end();
+
+        // Render content
         getViewport().apply();
         getBatch().setProjectionMatrix(getCamera().combined);
-
         getBatch().begin();
-        getBatch().draw(backgroundTexture, 0, 0, getViewport().getWorldWidth(), getViewport().getWorldHeight());
-        // Draw the coin animation
         renderer.draw(getBatch(), skeletons.get(AnimationType.COIN.ordinal()));
-        // Draw the button animations
         renderer.draw(getBatch(), skeletons.get(AnimationType.BUTTON.ordinal()));
-        // Draw the UI
-        getStage().act(delta);
-        getStage().draw();
-        // Draw the trail
         super.renderTrail(delta, getBatch());
         getBatch().end();
+
+        getStage().act(delta);
+        getStage().draw();
 
         // Render debug bounds
         // renderDebug();
@@ -328,8 +334,7 @@ public class MainAnimationScreen extends BaseScreen {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        getViewport().update(width, height, true);
-        getStage().getViewport().update(width, height, true);
+        backgroundViewport.update(width, height, true);
 
         setSkeletonScale(skeletons.get(AnimationType.COIN.ordinal()), Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
         setSkeletonPosition(skeletons.get(AnimationType.COIN.ordinal()), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);

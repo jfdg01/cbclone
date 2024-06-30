@@ -113,9 +113,7 @@ public abstract class BaseScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height);
-        camera.position.set(camera.viewportWidth / 2, camera.viewportHeight / 2, 0);
-        stage.getViewport().update(width, height, true);
+        viewport.update(width, height, true);
 //        Gdx.app.log("BaseScreen", "Resize: width=" + width + " height=" + height);
 //        Gdx.app.log("BaseScreen", "Camera position: x=" + camera.position.x + " y=" + camera.position.y);
 //        Gdx.app.log("BaseScreen", "Viewport: worldWidth=" + viewport.getWorldWidth() + " worldHeight=" + viewport.getWorldHeight() + " screenWidth=" + viewport.getScreenWidth() + " screenHeight=" + viewport.getScreenHeight());

@@ -212,8 +212,8 @@ public class MainMenuScreen extends BaseScreen {
     @Override
     public void resize(int width, int height) {
         super.resize(width, height);
-        getViewport().update(width, height, true);
         backgroundViewport.update(width, height, true);
+
         setSkeletonScale(skeletons.get(AnimationType.MENU.ordinal()), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
         setSkeletonPosition(skeletons.get(AnimationType.MENU.ordinal()), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
     }
