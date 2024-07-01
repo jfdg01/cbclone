@@ -106,7 +106,7 @@ public class ConfigurationScreen extends BaseScreen {
         getStage().act(delta);
         getStage().draw();
 
-        renderTrail(delta, getBatch());
+        renderTrail(delta, getBatch(), getViewport());
     }
 
     @Override

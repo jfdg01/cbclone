@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -31,7 +32,7 @@ public class MainAnimationScreen extends BaseScreen {
     private boolean isLooping = true;
     private float speedMultiplier = 1f;
     private float lastSliderValue = 0f;
-    private Texture backgroundTexture;
+    private TextureRegion backgroundTexture;
     private Viewport backgroundViewport;
 
     private enum AnimationType {
@@ -48,7 +49,8 @@ public class MainAnimationScreen extends BaseScreen {
 
         renderer = new SkeletonRenderer();
         renderer.setPremultipliedAlpha(true);
-        backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class);
+        Texture texture = assetManager.get(Constants.Background.PATH, Texture.class);
+        backgroundTexture = new TextureRegion(texture);
         backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
 
         shapeRenderer = new ShapeRenderer();
@@ -311,7 +313,7 @@ public class MainAnimationScreen extends BaseScreen {
         getStage().act(delta);
         getStage().draw();
 
-        renderTrail(delta, getBatch());
+        renderTrail(delta, getBatch(), getViewport());
 
         // Render debug bounds
         // renderDebug();

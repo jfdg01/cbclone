@@ -3,6 +3,7 @@ package com.kandclay.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -14,12 +15,17 @@ import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
 import com.kandclay.utils.ScreenType;
 
+import javax.swing.text.View;
 import java.util.HashMap;
 
 public class MainMenuScreen extends BaseScreen {
-    private Texture backgroundTexture;
+
+    private TextureRegion backgroundTexture;
     private boolean isInitialAnimationFinished = false;
     private Viewport backgroundViewport;
+
+    private Viewport mapViewport;
+    private TextureRegion minimapRegion;
 
     private enum AnimationType {
         MENU
@@ -38,15 +44,18 @@ public class MainMenuScreen extends BaseScreen {
 
         initializeAnimations();
 
-        backgroundTexture = assetManager.get(Constants.Background.PATH, Texture.class);
+        Texture texture = assetManager.get(Constants.Background.PATH, Texture.class);
+        backgroundTexture = new TextureRegion(texture);
+        backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+
+        // setUpMap();
+
         shapeRenderer = new ShapeRenderer();
 
         hoverStates = new HashMap<String, Boolean>();
         hoverStates.put(Constants.MainMenuScreen.BUTTON_PLAY_NAME, false);
         hoverStates.put(Constants.MainMenuScreen.BUTTON_QUIT_NAME, false);
         hoverStates.put(Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, false);
-
-        backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
 
         getStage().addListener(new InputListener() {
             @Override
@@ -67,6 +76,13 @@ public class MainMenuScreen extends BaseScreen {
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(getStage());
         Gdx.input.setInputProcessor(multiplexer);
+    }
+
+    private void setUpMap() {
+        Texture texture = new Texture(Gdx.files.internal("vp/texture.png"));
+        minimapRegion = new TextureRegion(texture);
+
+        mapViewport = new FitViewport(minimapRegion.getRegionWidth(), minimapRegion.getRegionHeight());
     }
 
     private void initializeAnimations() {
@@ -192,7 +208,17 @@ public class MainMenuScreen extends BaseScreen {
         getStage().act(delta);
         getStage().draw();
 
-        renderTrail(delta, getBatch());
+        // renderMap();
+
+        renderTrail(delta, getBatch(), getViewport());
+    }
+
+    private void renderMap() {
+        mapViewport.apply();
+        getBatch().setProjectionMatrix(mapViewport.getCamera().combined);
+        getBatch().begin();
+        getBatch().draw(minimapRegion, 0, 0);
+        getBatch().end();
     }
 
     private void renderDebug() {
@@ -215,8 +241,16 @@ public class MainMenuScreen extends BaseScreen {
         super.resize(width, height);
         backgroundViewport.update(width, height, true);
 
+        // updateMapViewport(width, height);
+
         setSkeletonScale(skeletons.get(AnimationType.MENU.ordinal()), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
         setSkeletonPosition(skeletons.get(AnimationType.MENU.ordinal()), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
+    }
+
+    public void updateMapViewport(int width, int height) {
+        mapViewport.update(width, height, true);
+        // 0,0 in bottom left corner
+        mapViewport.setScreenBounds(width - 200 - 20, height - 200 - 20, 200, 200);
     }
 
     @Override

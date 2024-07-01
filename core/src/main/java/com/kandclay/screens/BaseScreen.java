@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public abstract class BaseScreen implements Screen {
+
     protected MyAssetManager assetManager;
     protected AudioManager audioManager;
     protected SpineAnimationHandler spineAnimationHandler;
@@ -94,9 +95,12 @@ public abstract class BaseScreen implements Screen {
         clearScreen();
     }
 
-    void renderTrail(float delta, SpriteBatch batch) {
-        batch.begin();
+    void renderTrail(float delta, SpriteBatch batch, Viewport viewport) {
+
+        viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
+        batch.begin();
+
         Iterator<TrailDot> iterator = trailDots.iterator();
         while (iterator.hasNext()) {
             TrailDot trailDot = iterator.next();
@@ -207,7 +211,7 @@ public abstract class BaseScreen implements Screen {
             float scale = Math.min(scaleX, scaleY);
 
             skeleton.setScale(scale, scale);
-            Gdx.app.log("BaseScreen", skeleton.getData().getName() + " skeleton scale set to " + scale);
+//            Gdx.app.log("BaseScreen", skeleton.getData().getName() + " skeleton scale set to " + scale);
         }
     }
 
