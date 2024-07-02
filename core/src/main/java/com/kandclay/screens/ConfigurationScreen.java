@@ -13,6 +13,7 @@ import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
 import com.kandclay.utils.HairColor;
 import com.kandclay.utils.ScreenType;
+import com.kandclay.utils.TrailDot;
 
 import javax.swing.text.View;
 
@@ -106,7 +107,7 @@ public class ConfigurationScreen extends BaseScreen {
         getStage().act(delta);
         getStage().draw();
 
-        renderTrail(delta, getBatch(), getViewport());
+        TrailDot.renderTrail(delta, getBatch(), getViewport());
     }
 
     @Override

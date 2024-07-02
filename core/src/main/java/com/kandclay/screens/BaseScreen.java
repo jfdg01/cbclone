@@ -24,10 +24,9 @@ import com.kandclay.managers.ConfigurationManager;
 import com.kandclay.managers.MyAssetManager;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
+import com.kandclay.utils.TrailDot;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 public abstract class BaseScreen implements Screen {
 
@@ -37,9 +36,6 @@ public abstract class BaseScreen implements Screen {
     protected ConfigurationManager configManager;
     protected ScreenManager screenManager;
     protected ShapeRenderer shapeRenderer;
-
-    private final SnapshotArray<TrailDot> trailDots;
-    private int trailDotCount = 0;
 
     private final SpriteBatch batch;
     private final Camera camera;
@@ -58,7 +54,6 @@ public abstract class BaseScreen implements Screen {
         this.spineAnimationHandler = spineAnimationHandler;
         this.screenManager = screenManager;
 
-        this.trailDots = new SnapshotArray<TrailDot>();
         this.skeletons = new Array<Skeleton>();
         this.states = new Array<AnimationState>();
 
@@ -69,12 +64,17 @@ public abstract class BaseScreen implements Screen {
         this.stage = new Stage(viewport);
         this.batch = new SpriteBatch();
 
-        Gdx.input.setInputProcessor(stage);
+        // Gdx.input.setInputProcessor(stage);
 
+        addClickStage(stage);
+    }
+
+    public void addClickStage(Stage stage) {
+        TrailDot.setSpineAnimationHandler(this.spineAnimationHandler);
         stage.addListener(new InputListener() {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
-                createTrailDot(x, y);
+                TrailDot.createTrailDot(x, y);
                 return true;
             }
         });
@@ -93,29 +93,6 @@ public abstract class BaseScreen implements Screen {
     @Override
     public void render(float delta) {
         clearScreen();
-    }
-
-    void renderTrail(float delta, SpriteBatch batch, Viewport viewport) {
-
-        viewport.apply();
-        batch.setProjectionMatrix(viewport.getCamera().combined);
-        batch.begin();
-
-        Iterator<TrailDot> iterator = trailDots.iterator();
-        while (iterator.hasNext()) {
-            TrailDot trailDot = iterator.next();
-            trailDot.state.update(delta);
-            trailDot.state.apply(trailDot.skeleton);
-            trailDot.skeleton.updateWorldTransform();
-            trailDot.skeleton.setPosition(trailDot.x, trailDot.y);
-
-            trailDot.renderer.draw(batch, trailDot.skeleton);
-
-            if (trailDot.state.getCurrent(0) == null || trailDot.state.getCurrent(0).isComplete()) {
-                iterator.remove();
-            }
-        }
-        batch.end();
     }
 
     @Override
@@ -150,50 +127,6 @@ public abstract class BaseScreen implements Screen {
         }
         if (shapeRenderer != null) {
             shapeRenderer.dispose();
-        }
-    }
-
-    void createTrailDot(float x, float y) {
-        float hue = (trailDotCount % Constants.TrailDot.NUMBER_OF_COLORS);
-
-        Color currentColor = new Color();
-        currentColor.fromHsv(hue, Constants.TrailDot.SATURATION, Constants.TrailDot.VALUE);
-        currentColor.a = Constants.TrailDot.ALPHA;
-
-        String trailAtlasPath = Constants.TrailDot.ATLAS;
-        String trailSkeletonPath = Constants.TrailDot.JSON;
-
-        Skeleton trailSkeleton = spineAnimationHandler.createSkeleton(trailAtlasPath, trailSkeletonPath);
-        AnimationState trailState = spineAnimationHandler.createAnimationState(trailSkeleton);
-        SkeletonRenderer trailRenderer = new SkeletonRenderer();
-        trailRenderer.setPremultipliedAlpha(true);
-
-        float randomScale = MathUtils.random(Constants.TrailDot.MIN_SCALE, Constants.TrailDot.MAX_SCALE);
-        float randomRotation = MathUtils.random(Constants.TrailDot.MIN_ROTATION, Constants.TrailDot.MAX_ROTATION);
-
-        trailSkeleton.setPosition(x, y);
-        trailSkeleton.setColor(currentColor);
-        trailSkeleton.setScale(randomScale, randomScale);
-        trailSkeleton.getRootBone().setRotation(randomRotation);
-
-        trailState.setAnimation(0, "animation", false);
-
-        trailDots.add(new TrailDot(trailSkeleton, trailState, trailRenderer, x, y));
-        trailDotCount++;
-    }
-
-    private static class TrailDot {
-        public Skeleton skeleton;
-        public AnimationState state;
-        public SkeletonRenderer renderer;
-        public float x, y;
-
-        public TrailDot(Skeleton skeleton, AnimationState state, SkeletonRenderer renderer, float x, float y) {
-            this.skeleton = skeleton;
-            this.state = state;
-            this.renderer = renderer;
-            this.x = x;
-            this.y = y;
         }
     }
 
@@ -282,7 +215,6 @@ public abstract class BaseScreen implements Screen {
 
     public void setViewport(Viewport viewport) {
         this.viewport = viewport;
-        this.stage.setViewport(viewport);
     }
 
     public Camera getCamera() {

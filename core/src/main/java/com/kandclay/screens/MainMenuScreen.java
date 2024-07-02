@@ -8,14 +8,15 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.*;
 import com.esotericsoftware.spine.*;
 import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
 import com.kandclay.utils.ScreenType;
+import com.kandclay.utils.TrailDot;
 
-import javax.swing.text.View;
 import java.util.HashMap;
 
 public class MainMenuScreen extends BaseScreen {
@@ -24,8 +25,11 @@ public class MainMenuScreen extends BaseScreen {
     private boolean isInitialAnimationFinished = false;
     private Viewport backgroundViewport;
 
-    private Viewport mapViewport;
+    private Viewport minimapViewport;
     private TextureRegion minimapRegion;
+    private Stage minimapStage;
+
+    private boolean minimap = true;
 
     private enum AnimationType {
         MENU
@@ -48,7 +52,8 @@ public class MainMenuScreen extends BaseScreen {
         backgroundTexture = new TextureRegion(texture);
         backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
 
-        // setUpMap();
+        if (minimap)
+            setUpMinimap();
 
         shapeRenderer = new ShapeRenderer();
 
@@ -73,16 +78,19 @@ public class MainMenuScreen extends BaseScreen {
             }
         });
 
+        minimapStage = new Stage(minimapViewport);
+        addClickStage(minimapStage);
+
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(getStage());
         Gdx.input.setInputProcessor(multiplexer);
     }
 
-    private void setUpMap() {
+    private void setUpMinimap() {
         Texture texture = new Texture(Gdx.files.internal("vp/texture.png"));
         minimapRegion = new TextureRegion(texture);
 
-        mapViewport = new FitViewport(minimapRegion.getRegionWidth(), minimapRegion.getRegionHeight());
+        minimapViewport = new FitViewport(minimapRegion.getRegionWidth(), minimapRegion.getRegionHeight());
     }
 
     private void initializeAnimations() {
@@ -208,14 +216,17 @@ public class MainMenuScreen extends BaseScreen {
         getStage().act(delta);
         getStage().draw();
 
-        // renderMap();
+        TrailDot.renderTrail(delta, getBatch(), getViewport());
 
-        renderTrail(delta, getBatch(), getViewport());
+        if (minimap) {
+            renderMinimap();
+            TrailDot.renderTrail(delta, getBatch(), minimapViewport);
+        }
     }
 
-    private void renderMap() {
-        mapViewport.apply();
-        getBatch().setProjectionMatrix(mapViewport.getCamera().combined);
+    private void renderMinimap() {
+        minimapViewport.apply();
+        getBatch().setProjectionMatrix(minimapViewport.getCamera().combined);
         getBatch().begin();
         getBatch().draw(minimapRegion, 0, 0);
         getBatch().end();
@@ -241,16 +252,17 @@ public class MainMenuScreen extends BaseScreen {
         super.resize(width, height);
         backgroundViewport.update(width, height, true);
 
-        // updateMapViewport(width, height);
+        if (minimap)
+            updateMinimapViewport(width, height);
 
         setSkeletonScale(skeletons.get(AnimationType.MENU.ordinal()), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE);
         setSkeletonPosition(skeletons.get(AnimationType.MENU.ordinal()), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
     }
 
-    public void updateMapViewport(int width, int height) {
-        mapViewport.update(width, height, true);
+    public void updateMinimapViewport(int width, int height) {
+        minimapViewport.update(width, height, true);
         // 0,0 in bottom left corner
-        mapViewport.setScreenBounds(width - 200 - 20, height - 200 - 20, 200, 200);
+        minimapViewport.setScreenBounds(width - 200 - 20, height - 200 - 20, 200, 200);
     }
 
     @Override

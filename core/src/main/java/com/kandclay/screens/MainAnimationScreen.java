@@ -3,6 +3,7 @@ package com.kandclay.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -16,6 +17,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.esotericsoftware.spine.*;
 
@@ -23,7 +26,9 @@ import com.kandclay.handlers.SpineAnimationHandler;
 import com.kandclay.utils.Constants;
 import com.kandclay.managers.*;
 import com.kandclay.utils.ScreenType;
+import com.kandclay.utils.TrailDot;
 
+import javax.swing.text.View;
 import java.util.HashMap;
 
 public class MainAnimationScreen extends BaseScreen {
@@ -34,6 +39,7 @@ public class MainAnimationScreen extends BaseScreen {
     private float lastSliderValue = 0f;
     private TextureRegion backgroundTexture;
     private Viewport backgroundViewport;
+    private Viewport uiViewport;
 
     private enum AnimationType {
         COIN, BUTTON
@@ -52,6 +58,8 @@ public class MainAnimationScreen extends BaseScreen {
         Texture texture = assetManager.get(Constants.Background.PATH, Texture.class);
         backgroundTexture = new TextureRegion(texture);
         backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+
+        uiViewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
 
         shapeRenderer = new ShapeRenderer();
 
@@ -158,9 +166,6 @@ public class MainAnimationScreen extends BaseScreen {
                 return true;
             }
         });
-
-        getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
-        getStage().getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
 
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(getStage());
@@ -310,10 +315,14 @@ public class MainAnimationScreen extends BaseScreen {
         renderer.draw(getBatch(), skeletons.get(AnimationType.BUTTON.ordinal()));
         getBatch().end();
 
+        uiViewport.apply();
+        getBatch().setProjectionMatrix(uiViewport.getCamera().combined);
+        getBatch().begin();
         getStage().act(delta);
         getStage().draw();
+        getBatch().end();
 
-        renderTrail(delta, getBatch(), getViewport());
+        TrailDot.renderTrail(delta, getBatch(), getViewport());
 
         // Render debug bounds
         // renderDebug();
@@ -338,6 +347,7 @@ public class MainAnimationScreen extends BaseScreen {
     public void resize(int width, int height) {
         super.resize(width, height);
         backgroundViewport.update(width, height, true);
+        uiViewport.update(width, height, true);
 
         setSkeletonScale(skeletons.get(AnimationType.COIN.ordinal()), Constants.MainAnimationScreen.COIN_WIDTH_PERCENTAGE, Constants.MainAnimationScreen.COIN_HEIGHT_PERCENTAGE);  // Adjust the percentages as needed
         setSkeletonPosition(skeletons.get(AnimationType.COIN.ordinal()), getViewport().getWorldWidth() / 2, getViewport().getWorldHeight() / 2);
