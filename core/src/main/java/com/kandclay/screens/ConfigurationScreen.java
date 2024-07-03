@@ -1,6 +1,9 @@
 package com.kandclay.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -25,6 +28,11 @@ public class ConfigurationScreen extends BaseScreen {
     private HairColor currentHairColor;
     private boolean isYellowCoin;
 
+    private SpriteBatch batch;
+    private Camera camera;
+    private Viewport viewport;
+    private Stage stage;
+
     public ConfigurationScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
         super(spineAnimationHandler, screenManager);
         this.screenManager = screenManager;
@@ -32,9 +40,11 @@ public class ConfigurationScreen extends BaseScreen {
 
     @Override
     public void show() {
-        super.show();
 
-        setViewport(new ScreenViewport(getCamera()));
+        camera = new OrthographicCamera();
+        viewport = new ScreenViewport(camera);
+        stage = new Stage(viewport);
+        batch = new SpriteBatch();
 
         Skin skin = assetManager.get(Constants.Skin.JSON, Skin.class);
         float savedVolume = configManager.getPreference("volume", Constants.Audio.DEFAULT_VOLUME);
@@ -92,28 +102,31 @@ public class ConfigurationScreen extends BaseScreen {
         table.add(coinColorButton).width(Constants.UIButtons.CONTROL_BUTTON_WIDTH).height(Constants.UIButtons.CONTROL_BUTTON_HEIGHT).padBottom(Constants.UIButtons.PADDING).row();
         table.add(backButton).width(Constants.UIButtons.BACK_BUTTON_WIDTH).height(Constants.UIButtons.CONTROL_BUTTON_HEIGHT).padTop(Constants.UIButtons.PADDING);
 
-        getStage().addActor(table);
+        stage.addActor(table);
 
-        getViewport().update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     @Override
     public void render(float delta) {
         super.render(delta);
 
-        getViewport().apply();
-        getBatch().setProjectionMatrix(getViewport().getCamera().combined);
+        viewport.apply();
+        batch.setProjectionMatrix(viewport.getCamera().combined);
 
-        getStage().act(delta);
-        getStage().draw();
+        stage.act(delta);
+        stage.draw();
 
-        TrailDot.renderTrail(delta, getBatch(), getViewport());
+        TrailDot.renderTrail(delta, batch, viewport);
     }
 
     @Override
     public void resize(int width, int height) {
-        super.resize(width, height);
-        getViewport().update(width, height, true);
+        viewport.update(width, height, true);
     }
 
     @Override

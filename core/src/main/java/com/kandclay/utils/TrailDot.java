@@ -1,8 +1,10 @@
 package com.kandclay.utils;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.SnapshotArray;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.esotericsoftware.spine.AnimationState;
@@ -20,20 +22,34 @@ public class TrailDot {
     private static SnapshotArray<TrailDot> trailDots = new SnapshotArray<TrailDot>();
     private static int trailDotCount = 0;
     public float x, y;
+    public Viewport viewport;
 
-    public TrailDot(Skeleton skeleton, AnimationState state, SkeletonRenderer renderer, float x, float y) {
+    public TrailDot(Skeleton skeleton, AnimationState state, SkeletonRenderer renderer, float x, float y, Viewport viewport) {
         this.skeleton = skeleton;
         this.state = state;
         this.renderer = renderer;
         this.x = x;
         this.y = y;
+        this.viewport = viewport;
     }
 
     public static void setSpineAnimationHandler(SpineAnimationHandler handler) {
         spineAnimationHandler = handler;
     }
 
-    public static void createTrailDot(float x, float y) {
+    public static void createTrailDot(float x, float y, Viewport viewport) {
+        Rectangle screenBounds = new Rectangle(
+            viewport.getScreenX(),
+            viewport.getScreenY(),
+            viewport.getScreenWidth(),
+            viewport.getScreenHeight()
+        );
+
+        int screenY = Gdx.graphics.getHeight() - Gdx.input.getY(); // Flip Y-coordinate
+
+        if (!screenBounds.contains(Gdx.input.getX(), screenY)) {
+            return;
+        }
 
         float hue = (trailDotCount % Constants.TrailDot.NUMBER_OF_COLORS);
 
@@ -59,12 +75,11 @@ public class TrailDot {
 
         trailState.setAnimation(0, "animation", false);
 
-        trailDots.add(new TrailDot(trailSkeleton, trailState, trailRenderer, x, y));
+        trailDots.add(new TrailDot(trailSkeleton, trailState, trailRenderer, x, y, viewport));
         trailDotCount++;
     }
 
     public static void renderTrail(float delta, SpriteBatch batch, Viewport viewport) {
-
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
@@ -72,15 +87,17 @@ public class TrailDot {
         Iterator<TrailDot> iterator = trailDots.iterator();
         while (iterator.hasNext()) {
             TrailDot trailDot = iterator.next();
-            trailDot.state.update(delta);
-            trailDot.state.apply(trailDot.skeleton);
-            trailDot.skeleton.updateWorldTransform();
-            trailDot.skeleton.setPosition(trailDot.x, trailDot.y);
+            if (trailDot.viewport == viewport) {
+                trailDot.state.update(delta);
+                trailDot.state.apply(trailDot.skeleton);
+                trailDot.skeleton.updateWorldTransform();
+                trailDot.skeleton.setPosition(trailDot.x, trailDot.y);
 
-            trailDot.renderer.draw(batch, trailDot.skeleton);
+                trailDot.renderer.draw(batch, trailDot.skeleton);
 
-            if (trailDot.state.getCurrent(0) == null || trailDot.state.getCurrent(0).isComplete()) {
-                iterator.remove();
+                if (trailDot.state.getCurrent(0) == null || trailDot.state.getCurrent(0).isComplete()) {
+                    iterator.remove();
+                }
             }
         }
         batch.end();

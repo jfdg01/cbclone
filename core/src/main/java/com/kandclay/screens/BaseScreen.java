@@ -3,17 +3,14 @@ package com.kandclay.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.SnapshotArray;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.esotericsoftware.spine.*;
@@ -37,11 +34,6 @@ public abstract class BaseScreen implements Screen {
     protected ScreenManager screenManager;
     protected ShapeRenderer shapeRenderer;
 
-    private final SpriteBatch batch;
-    private final Camera camera;
-    private Viewport viewport;
-    private final Stage stage;
-
     protected SkeletonRenderer renderer;
     protected Array<AnimationState> states;
     protected Array<Skeleton> skeletons;
@@ -57,24 +49,15 @@ public abstract class BaseScreen implements Screen {
         this.skeletons = new Array<Skeleton>();
         this.states = new Array<AnimationState>();
 
-        // Initialize camera and viewport
-        this.viewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
-        this.camera = viewport.getCamera();
-
-        this.stage = new Stage(viewport);
-        this.batch = new SpriteBatch();
-
         // Gdx.input.setInputProcessor(stage);
-
-        addClickStage(stage);
     }
 
-    public void addClickStage(Stage stage) {
+    public void addTrailToStage(final Stage stage, final Viewport viewport) {
         TrailDot.setSpineAnimationHandler(this.spineAnimationHandler);
         stage.addListener(new InputListener() {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
-                TrailDot.createTrailDot(x, y);
+                TrailDot.createTrailDot(x, y, viewport);
                 return true;
             }
         });
@@ -97,11 +80,7 @@ public abstract class BaseScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height, true);
-//        Gdx.app.log("BaseScreen", "Resize: width=" + width + " height=" + height);
-//        Gdx.app.log("BaseScreen", "Camera position: x=" + camera.position.x + " y=" + camera.position.y);
-//        Gdx.app.log("BaseScreen", "Viewport: worldWidth=" + viewport.getWorldWidth() + " worldHeight=" + viewport.getWorldHeight() + " screenWidth=" + viewport.getScreenWidth() + " screenHeight=" + viewport.getScreenHeight());
-//        Gdx.app.log("BaseScreen", "Stage: width=" + stage.getWidth() + " height=" + stage.getHeight());
+
     }
 
     @Override
@@ -121,16 +100,12 @@ public abstract class BaseScreen implements Screen {
 
     @Override
     public void dispose() {
-        stage.dispose();
-        if (batch != null) {
-            batch.dispose();
-        }
         if (shapeRenderer != null) {
             shapeRenderer.dispose();
         }
     }
 
-    protected void setSkeletonScale(Skeleton skeleton, float widthPercentage, float heightPercentage) {
+    protected void setSkeletonScale(Skeleton skeleton, float widthPercentage, float heightPercentage, Viewport viewport) {
         if (skeleton != null) {
             float screenWidth = viewport.getWorldWidth();
             float screenHeight = viewport.getWorldHeight();
@@ -203,26 +178,6 @@ public abstract class BaseScreen implements Screen {
             skeleton.setPosition(x, y);
 //            Gdx.app.log("BaseScreen", skeleton.getData().getName() + " skeleton position set to x=" + x + " y=" + y);
         }
-    }
-
-    public Stage getStage() {
-        return stage;
-    }
-
-    public Viewport getViewport() {
-        return viewport;
-    }
-
-    public void setViewport(Viewport viewport) {
-        this.viewport = viewport;
-    }
-
-    public Camera getCamera() {
-        return camera;
-    }
-
-    public SpriteBatch getBatch() {
-        return batch;
     }
 }
 
