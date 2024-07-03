@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.*;
 import com.esotericsoftware.spine.*;
 import com.kandclay.handlers.SpineAnimationHandler;
+import com.kandclay.managers.MyAssetManager;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
 import com.kandclay.utils.ScreenType;
@@ -22,8 +23,9 @@ import java.util.HashMap;
 
 public class MainMenuScreen extends BaseScreen {
 
-    private TextureRegion backgroundTexture;
     private boolean isInitialAnimationFinished = false;
+    private final boolean debugMode = false;
+
     private Viewport backgroundViewport;
 
     private SpriteBatch batch;
@@ -31,10 +33,12 @@ public class MainMenuScreen extends BaseScreen {
     private Viewport viewport;
     private Stage stage;
 
-    private TextureRegion minimapRegion;
     private Camera minimapCamera;
     private Viewport minimapViewport;
     private Stage minimapStage;
+
+    private TextureRegion backgroundTexture;
+    private TextureRegion minimapRegion;
 
     private enum AnimationType {
         MENU_1, MENU_2
@@ -47,44 +51,66 @@ public class MainMenuScreen extends BaseScreen {
 
     @Override
     public void show() {
+        initializeCommonComponents();
+        initializeBackground();
+        initializeMainContent();
+        initializeMinimap();
+        setupInputProcessing();
+    }
 
-        camera = new OrthographicCamera();
-        viewport = new ExtendViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT, camera);
-        stage = new Stage(viewport);
+    private void initializeCommonComponents() {
         batch = new SpriteBatch();
-
         skeletonRenderer = new SkeletonRenderer();
         skeletonRenderer.setPremultipliedAlpha(true);
-
-        initializeAnimations();
-
-        Texture texture = assetManager.get(Constants.Background.PATH, Texture.class);
-        backgroundTexture = new TextureRegion(texture);
-        backgroundViewport = new ExtendViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT);
-
-        texture = new Texture(Gdx.files.internal("vp/texture.png"));
-        minimapRegion = new TextureRegion(texture);
-        minimapCamera = new OrthographicCamera();
-        minimapViewport = new FitViewport(minimapRegion.getRegionWidth(), minimapRegion.getRegionHeight(), minimapCamera);
-        minimapStage = new Stage(minimapViewport);
         shapeRenderer = new ShapeRenderer();
+        initializeHoverStates();
+    }
 
+    private void initializeHoverStates() {
         hoverStates = new HashMap<String, Boolean>();
         hoverStates.put(Constants.MainMenuScreen.BUTTON_PLAY_NAME, false);
         hoverStates.put(Constants.MainMenuScreen.BUTTON_QUIT_NAME, false);
         hoverStates.put(Constants.MainMenuScreen.BUTTON_STGS_NAME, false);
+    }
 
-        setUpStage(minimapStage, minimapViewport, AnimationType.MENU_2.ordinal());
+    private void initializeBackground() {
+        Texture texture = assetManager.get(Constants.Background.PATH, Texture.class);
+        backgroundTexture = new TextureRegion(texture);
+        backgroundViewport = new ExtendViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT);
+    }
+
+    private void initializeMainContent() {
+        camera = new OrthographicCamera();
+        viewport = new ExtendViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT, camera);
+        stage = new Stage(viewport);
+        initializeAnimations();
         setUpStage(stage, viewport, AnimationType.MENU_1.ordinal());
+    }
 
+    private void initializeMinimap() {
+        Texture texture = assetManager.get(Constants.Minimap.PATH, Texture.class);
+        minimapRegion = new TextureRegion(texture);
+        minimapCamera = new OrthographicCamera();
+        minimapViewport = new FitViewport(minimapRegion.getRegionWidth(), minimapRegion.getRegionHeight(), minimapCamera);
+        minimapStage = new Stage(minimapViewport);
+        setUpStage(minimapStage, minimapViewport, AnimationType.MENU_2.ordinal());
+    }
+
+    private void setupInputProcessing() {
         InputMultiplexer multiplexer = new InputMultiplexer();
+        // Since the minimap is on top, it should be processed first
         multiplexer.addProcessor(minimapStage);
         multiplexer.addProcessor(stage);
         Gdx.input.setInputProcessor(multiplexer);
     }
 
     private void setUpStage(Stage stage, Viewport viewport, final int skeletonIndex) {
-        stage.addListener(new InputListener() {
+        stage.addListener(createStageInputListener(skeletonIndex));
+        addTrailToStage(stage, viewport);
+    }
+
+    private InputListener createStageInputListener(final int skeletonIndex) {
+        return new InputListener() {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
                 if (isInitialAnimationFinished) {
@@ -98,9 +124,7 @@ public class MainMenuScreen extends BaseScreen {
                 handleClick(x, y, skeletonIndex);
                 return true;
             }
-        });
-
-        addTrailToStage(stage, viewport);
+        };
     }
 
     private void initializeMenuSkeleton(int skeletonIndex) {
@@ -142,6 +166,54 @@ public class MainMenuScreen extends BaseScreen {
             public void event(AnimationState.TrackEntry entry, Event event) {
             }
         });
+    }
+
+    private void renderBackground() {
+        backgroundViewport.apply();
+        batch.setProjectionMatrix(backgroundViewport.getCamera().combined);
+        batch.begin();
+        batch.draw(backgroundTexture, 0, 0, backgroundViewport.getWorldWidth(), backgroundViewport.getWorldHeight());
+        batch.end();
+    }
+
+    private void renderMainContent(float delta) {
+        renderMenu(delta, batch, viewport, AnimationType.MENU_1.ordinal());
+        renderDebug(viewport, Color.RED, AnimationType.MENU_1.ordinal());
+        stage.act(delta);
+        stage.draw();
+        TrailDot.renderTrail(delta, batch, viewport);
+    }
+
+    private void renderMinimap(float delta) {
+        minimapViewport.apply();
+        batch.setProjectionMatrix(minimapViewport.getCamera().combined);
+        batch.begin();
+        batch.draw(minimapRegion, 0, 0);
+        batch.end();
+
+        renderMenu(delta, batch, minimapViewport, AnimationType.MENU_2.ordinal());
+        renderDebug(minimapViewport, Color.GREEN, AnimationType.MENU_2.ordinal());
+        minimapStage.act(delta);
+        minimapStage.draw();
+        TrailDot.renderTrail(delta, batch, minimapViewport);
+    }
+
+    private void renderMenu(float delta, SpriteBatch batch, Viewport viewport, int skeletonIndex) {
+        Skeleton skeleton = skeletons.get(skeletonIndex);
+        AnimationState state = states.get(skeletonIndex);
+
+        viewport.apply();
+        batch.setProjectionMatrix(viewport.getCamera().combined);
+        batch.begin();
+
+        state.update(delta);
+        state.apply(skeleton);
+        skeleton.updateWorldTransform();
+        updateSkeletonScaleAndPosition(viewport, skeletonIndex);
+
+        skeletonRenderer.draw(batch, skeleton);
+
+        batch.end();
     }
 
     private void initializeAnimations() {
@@ -206,78 +278,29 @@ public class MainMenuScreen extends BaseScreen {
         });
     }
 
-    private void renderMenu(float delta, SpriteBatch batch, Viewport viewport, int skeletonIndex) {
-
-        Skeleton skeleton = skeletons.get(skeletonIndex);
-        AnimationState state = states.get(skeletonIndex);
-        SkeletonRenderer renderer = skeletonRenderer;
-
-        viewport.apply();
-        batch.setProjectionMatrix(viewport.getCamera().combined);
-        batch.begin();
-
-        state.update(delta);
-        state.apply(skeleton);
-        skeleton.updateWorldTransform();
-        setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
-        setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE, viewport);
-
-        renderer.draw(batch, skeleton);
-
-        batch.end();
-    }
-
     @Override
     public void render(float delta) {
         clearScreen();
 
-        int menu_1 = AnimationType.MENU_1.ordinal();
-        int menu_2 = AnimationType.MENU_2.ordinal();
+        clearScreen();
 
-        // Render background
-        backgroundViewport.apply();
-        batch.setProjectionMatrix(backgroundViewport.getCamera().combined);
-        batch.begin();
-        batch.draw(backgroundTexture, 0, 0, backgroundViewport.getWorldWidth(), backgroundViewport.getWorldHeight());
-        batch.end();
+        renderBackground();
 
-        // Render content ----------------------------------------------------------------------------------------------
+        renderMainContent(delta);
 
-        renderMenu(delta, batch, viewport, menu_1);
-
-        renderDebug(viewport, Color.RED, menu_1);
-
-        stage.act(delta);
-        stage.draw();
-
-        TrailDot.renderTrail(delta, batch, viewport);
-
-        // Render minimap ----------------------------------------------------------------------------------------------
-
-        minimapViewport.apply();
-        batch.setProjectionMatrix(minimapViewport.getCamera().combined);
-        batch.begin();
-        batch.draw(minimapRegion, 0, 0);
-        batch.end();
-
-        renderMenu(delta, batch, minimapViewport, menu_2);
-
-        renderDebug(minimapViewport, Color.GREEN, menu_2);
-
-        minimapStage.act(delta);
-        minimapStage.draw();
-
-        TrailDot.renderTrail(delta, batch, minimapViewport);
+        renderMinimap(delta);
     }
 
     private void renderDebug(Viewport viewport, Color color, int skeletonIndex) {
-        shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(color);
-        drawDebugBounds(Constants.MainMenuScreen.BUTTON_PLAY_NAME, skeletonIndex);
-        drawDebugBounds(Constants.MainMenuScreen.BUTTON_QUIT_NAME, skeletonIndex);
-        drawDebugBounds(Constants.MainMenuScreen.BUTTON_STGS_NAME, skeletonIndex);
-        shapeRenderer.end();
+        if (debugMode) {
+            shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(color);
+            drawDebugBounds(Constants.MainMenuScreen.BUTTON_PLAY_NAME, skeletonIndex);
+            drawDebugBounds(Constants.MainMenuScreen.BUTTON_QUIT_NAME, skeletonIndex);
+            drawDebugBounds(Constants.MainMenuScreen.BUTTON_STGS_NAME, skeletonIndex);
+            shapeRenderer.end();
+        }
     }
 
     private void drawDebugBounds(String buttonName, int skeletonIndex) {
@@ -289,10 +312,13 @@ public class MainMenuScreen extends BaseScreen {
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         backgroundViewport.update(width, height, true);
-        minimapViewport.update(width, height, true);
-        minimapViewport.setScreenBounds(width - 200 - 20, height - 200 - 20, 200, 200);
+        updateMinimapViewport(width, height);
+    }
 
-        // updateSkeletons(viewport);
+    private void updateMinimapViewport(int width, int height) {
+        minimapViewport.update(width, height, true);
+        minimapViewport.setScreenBounds(width - Constants.Minimap.WIDTH - Constants.Minimap.PADDING,
+            height - Constants.Minimap.HEIGHT - Constants.Minimap.PADDING, Constants.Minimap.WIDTH, Constants.Minimap.HEIGHT);
     }
 
     private void updateSkeletonScaleAndPosition(Viewport viewport, int skeletonIndex) {

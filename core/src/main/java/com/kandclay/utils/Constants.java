@@ -54,6 +54,13 @@ public class Constants {
         public static final float SKEL_HEIGHT_PERCENTAGE = 1.3f;
     }
 
+    public static class Minimap {
+        public static final int WIDTH = 200;
+        public static final int HEIGHT = 200;
+        public static final int PADDING = 20;
+        public static final String PATH = "vp/texture.png";
+    }
+
     public static class Audio {
         public static final float DEFAULT_VOLUME = 1f;
     }

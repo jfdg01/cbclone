@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -51,6 +52,7 @@ public class Main extends ApplicationAdapter {
         assetManager.load(Constants.MainAnimationScreen.RedCoin.ATLAS, TextureAtlas.class);
         assetManager.load(Constants.Background.PATH, Texture.class);
         assetManager.load(Constants.MainAnimationScreen.ATLAS, TextureAtlas.class);
+        assetManager.load(Constants.Minimap.PATH, Texture.class);
 
         // Load bitmap font
         assetManager.load(Constants.Font.FONT_FNT, BitmapFont.class);
