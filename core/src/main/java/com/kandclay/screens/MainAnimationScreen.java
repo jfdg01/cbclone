@@ -21,7 +21,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.esotericsoftware.spine.*;
 
@@ -31,7 +30,6 @@ import com.kandclay.managers.*;
 import com.kandclay.utils.ScreenType;
 import com.kandclay.utils.TrailDot;
 
-import javax.swing.text.View;
 import java.util.HashMap;
 
 public class MainAnimationScreen extends BaseScreen {
@@ -64,17 +62,17 @@ public class MainAnimationScreen extends BaseScreen {
     public void show() {
 
         camera = new OrthographicCamera();
-        viewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT, camera);
+        viewport = new ExtendViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT, camera);
         stage = new Stage(viewport);
         batch = new SpriteBatch();
 
-        renderer = new SkeletonRenderer();
-        renderer.setPremultipliedAlpha(true);
+        skeletonRenderer = new SkeletonRenderer();
+        skeletonRenderer.setPremultipliedAlpha(true);
         Texture texture = assetManager.get(Constants.Background.PATH, Texture.class);
         backgroundTexture = new TextureRegion(texture);
-        backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+        backgroundViewport = new ExtendViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT);
 
-        uiViewport = new FitViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+        uiViewport = new FitViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT);
 
         shapeRenderer = new ShapeRenderer();
 
@@ -326,8 +324,8 @@ public class MainAnimationScreen extends BaseScreen {
         viewport.apply();
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        renderer.draw(batch, skeletons.get(AnimationType.COIN.ordinal()));
-        renderer.draw(batch, skeletons.get(AnimationType.BUTTON.ordinal()));
+        skeletonRenderer.draw(batch, skeletons.get(AnimationType.COIN.ordinal()));
+        skeletonRenderer.draw(batch, skeletons.get(AnimationType.BUTTON.ordinal()));
         batch.end();
 
         uiViewport.apply();

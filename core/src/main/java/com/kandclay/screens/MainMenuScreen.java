@@ -31,14 +31,13 @@ public class MainMenuScreen extends BaseScreen {
     private Viewport viewport;
     private Stage stage;
 
-    private Viewport minimapViewport;
     private TextureRegion minimapRegion;
+    private Camera minimapCamera;
+    private Viewport minimapViewport;
     private Stage minimapStage;
 
-    private boolean minimap = true;
-
     private enum AnimationType {
-        MENU
+        MENU_1, MENU_2
     }
 
     public MainMenuScreen(SpineAnimationHandler spineAnimationHandler, ScreenManager screenManager) {
@@ -50,31 +49,33 @@ public class MainMenuScreen extends BaseScreen {
     public void show() {
 
         camera = new OrthographicCamera();
-        viewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT, camera);
+        viewport = new ExtendViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT, camera);
         stage = new Stage(viewport);
         batch = new SpriteBatch();
 
-        renderer = new SkeletonRenderer();
-        renderer.setPremultipliedAlpha(true);
+        skeletonRenderer = new SkeletonRenderer();
+        skeletonRenderer.setPremultipliedAlpha(true);
 
         initializeAnimations();
 
         Texture texture = assetManager.get(Constants.Background.PATH, Texture.class);
         backgroundTexture = new TextureRegion(texture);
-        backgroundViewport = new ExtendViewport(Constants.General.WIDTH, Constants.General.HEIGHT);
+        backgroundViewport = new ExtendViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT);
 
-        if (minimap)
-            setUpMinimap();
-
+        texture = new Texture(Gdx.files.internal("vp/texture.png"));
+        minimapRegion = new TextureRegion(texture);
+        minimapCamera = new OrthographicCamera();
+        minimapViewport = new FitViewport(minimapRegion.getRegionWidth(), minimapRegion.getRegionHeight(), minimapCamera);
+        minimapStage = new Stage(minimapViewport);
         shapeRenderer = new ShapeRenderer();
 
         hoverStates = new HashMap<String, Boolean>();
         hoverStates.put(Constants.MainMenuScreen.BUTTON_PLAY_NAME, false);
         hoverStates.put(Constants.MainMenuScreen.BUTTON_QUIT_NAME, false);
-        hoverStates.put(Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, false);
+        hoverStates.put(Constants.MainMenuScreen.BUTTON_STGS_NAME, false);
 
-        setUpStage(stage, viewport);
-        setUpStage(minimapStage, minimapViewport);
+        setUpStage(minimapStage, minimapViewport, AnimationType.MENU_2.ordinal());
+        setUpStage(stage, viewport, AnimationType.MENU_1.ordinal());
 
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(minimapStage);
@@ -82,19 +83,19 @@ public class MainMenuScreen extends BaseScreen {
         Gdx.input.setInputProcessor(multiplexer);
     }
 
-    private void setUpStage(Stage stage, Viewport viewport) {
+    private void setUpStage(Stage stage, Viewport viewport, final int skeletonIndex) {
         stage.addListener(new InputListener() {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
                 if (isInitialAnimationFinished) {
-                    handleHover(x, y);
+                    handleHover(x, y, skeletonIndex);
                 }
                 return true;
             }
 
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                handleClick(x, y);
+                handleClick(x, y, skeletonIndex);
                 return true;
             }
         });
@@ -102,25 +103,18 @@ public class MainMenuScreen extends BaseScreen {
         addTrailToStage(stage, viewport);
     }
 
-    private void setUpMinimap() {
-        Texture texture = new Texture(Gdx.files.internal("vp/texture.png"));
-        minimapRegion = new TextureRegion(texture);
-        minimapViewport = new FitViewport(minimapRegion.getRegionWidth(), minimapRegion.getRegionHeight());
-        minimapStage = new Stage(minimapViewport);
-    }
+    private void initializeMenuSkeleton(int skeletonIndex) {
 
-    private void initializeAnimations() {
         String atlasPath = Constants.MainMenuScreen.ATLAS;
         String skeletonPath = Constants.MainMenuScreen.JSON;
 
-        skeletons.insert(AnimationType.MENU.ordinal(), spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
-        states.insert(AnimationType.MENU.ordinal(), spineAnimationHandler.createAnimationState(skeletons.get(AnimationType.MENU.ordinal())));
+        skeletons.insert(skeletonIndex, spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
+        states.insert(skeletonIndex, spineAnimationHandler.createAnimationState(skeletons.get(skeletonIndex)));
 
-        setSkeletonScale(skeletons.get(AnimationType.MENU.ordinal()), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE, viewport); // Adjust the percentages as needed
-        setSkeletonPosition(skeletons.get(AnimationType.MENU.ordinal()), viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
-        states.get(AnimationType.MENU.ordinal()).setAnimation(0, "animation", false);
+        // updateSkeletons(viewport);
+        states.get(skeletonIndex).setAnimation(0, "animation", false);
 
-        states.get(AnimationType.MENU.ordinal()).addListener(new AnimationState.AnimationStateListener() {
+        states.get(skeletonIndex).addListener(new AnimationState.AnimationStateListener() {
             @Override
             public void start(AnimationState.TrackEntry entry) {
             }
@@ -150,25 +144,30 @@ public class MainMenuScreen extends BaseScreen {
         });
     }
 
-    private void handleHover(float x, float y) {
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, AnimationType.MENU.ordinal(), 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, AnimationType.MENU.ordinal(), 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, AnimationType.MENU.ordinal(), 3, "Buttons/SettingsHoverIn", "Buttons/SettingsHoverOut");
+    private void initializeAnimations() {
+        initializeMenuSkeleton(AnimationType.MENU_1.ordinal());
+        initializeMenuSkeleton(AnimationType.MENU_2.ordinal());
     }
 
-    private void handleClick(float x, float y) {
-        if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, AnimationType.MENU.ordinal())) {
-            playButtonPressAnimation("Buttons/PlayPress", ScreenType.MAIN);
-        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, AnimationType.MENU.ordinal())) {
-            playButtonPressAnimation("Buttons/QuitPress", null);
-        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, AnimationType.MENU.ordinal())) {
-            playButtonPressAnimation("Buttons/SettingsPress", ScreenType.OPTIONS);
+    private void handleHover(float x, float y, int skeletonIndex) {
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, skeletonIndex, 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, skeletonIndex, 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_STGS_NAME, skeletonIndex, 3, "Buttons/SettingsHoverIn", "Buttons/SettingsHoverOut");
+    }
+
+    private void handleClick(float x, float y, int skeletonIndex) {
+        if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, skeletonIndex)) {
+            playButtonPressAnimation("Buttons/PlayPress", ScreenType.MAIN, skeletonIndex);
+        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, skeletonIndex)) {
+            playButtonPressAnimation("Buttons/QuitPress", null, skeletonIndex);
+        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_STGS_NAME, skeletonIndex)) {
+            playButtonPressAnimation("Buttons/SettingsPress", ScreenType.OPTIONS, skeletonIndex);
         }
     }
 
-    private void playButtonPressAnimation(final String animationName, final ScreenType screenType) {
+    private void playButtonPressAnimation(final String animationName, final ScreenType screenType, int skeletonIndex) {
         Gdx.app.log("MainMenuScreen", "Playing button press animation: " + animationName);
-        states.get(AnimationType.MENU.ordinal()).setAnimation(4, animationName, false).setListener(new AnimationState.AnimationStateListener() {
+        states.get(skeletonIndex).setAnimation(4, animationName, false).setListener(new AnimationState.AnimationStateListener() {
             @Override
             public void start(AnimationState.TrackEntry entry) {
             }
@@ -207,13 +206,33 @@ public class MainMenuScreen extends BaseScreen {
         });
     }
 
+    private void renderMenu(float delta, SpriteBatch batch, Viewport viewport, int skeletonIndex) {
+
+        Skeleton skeleton = skeletons.get(skeletonIndex);
+        AnimationState state = states.get(skeletonIndex);
+        SkeletonRenderer renderer = skeletonRenderer;
+
+        viewport.apply();
+        batch.setProjectionMatrix(viewport.getCamera().combined);
+        batch.begin();
+
+        state.update(delta);
+        state.apply(skeleton);
+        skeleton.updateWorldTransform();
+        setSkeletonPosition(skeleton, viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+        setSkeletonScale(skeleton, Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE, viewport);
+
+        renderer.draw(batch, skeleton);
+
+        batch.end();
+    }
+
     @Override
     public void render(float delta) {
         clearScreen();
 
-        states.get(AnimationType.MENU.ordinal()).update(delta);
-        states.get(AnimationType.MENU.ordinal()).apply(skeletons.get(AnimationType.MENU.ordinal()));
-        skeletons.get(AnimationType.MENU.ordinal()).updateWorldTransform();
+        int menu_1 = AnimationType.MENU_1.ordinal();
+        int menu_2 = AnimationType.MENU_2.ordinal();
 
         // Render background
         backgroundViewport.apply();
@@ -222,47 +241,47 @@ public class MainMenuScreen extends BaseScreen {
         batch.draw(backgroundTexture, 0, 0, backgroundViewport.getWorldWidth(), backgroundViewport.getWorldHeight());
         batch.end();
 
-        // Render content
-        viewport.apply();
-        batch.setProjectionMatrix(viewport.getCamera().combined);
-        batch.begin();
-        renderer.draw(batch, skeletons.get(AnimationType.MENU.ordinal()));
-        batch.end();
+        // Render content ----------------------------------------------------------------------------------------------
+
+        renderMenu(delta, batch, viewport, menu_1);
+
+        renderDebug(viewport, Color.RED, menu_1);
 
         stage.act(delta);
         stage.draw();
 
         TrailDot.renderTrail(delta, batch, viewport);
 
-        if (minimap) {
-            renderMinimap(delta);
-            TrailDot.renderTrail(delta, batch, minimapViewport);
-        }
-    }
+        // Render minimap ----------------------------------------------------------------------------------------------
 
-    private void renderMinimap(float delta) {
         minimapViewport.apply();
         batch.setProjectionMatrix(minimapViewport.getCamera().combined);
         batch.begin();
         batch.draw(minimapRegion, 0, 0);
         batch.end();
 
+        renderMenu(delta, batch, minimapViewport, menu_2);
+
+        renderDebug(minimapViewport, Color.GREEN, menu_2);
+
         minimapStage.act(delta);
         minimapStage.draw();
+
+        TrailDot.renderTrail(delta, batch, minimapViewport);
     }
 
-    private void renderDebug() {
+    private void renderDebug(Viewport viewport, Color color, int skeletonIndex) {
         shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.RED);
-        drawDebugBounds(Constants.MainMenuScreen.BUTTON_PLAY_NAME);
-        drawDebugBounds(Constants.MainMenuScreen.BUTTON_QUIT_NAME);
-        drawDebugBounds(Constants.MainMenuScreen.BUTTON_SETTINGS_NAME);
+        shapeRenderer.setColor(color);
+        drawDebugBounds(Constants.MainMenuScreen.BUTTON_PLAY_NAME, skeletonIndex);
+        drawDebugBounds(Constants.MainMenuScreen.BUTTON_QUIT_NAME, skeletonIndex);
+        drawDebugBounds(Constants.MainMenuScreen.BUTTON_STGS_NAME, skeletonIndex);
         shapeRenderer.end();
     }
 
-    private void drawDebugBounds(String buttonName) {
-        Rectangle bounds = getButtonBounds(buttonName, AnimationType.MENU.ordinal());
+    private void drawDebugBounds(String buttonName, int skeletonIndex) {
+        Rectangle bounds = getButtonBounds(buttonName, skeletonIndex);
         shapeRenderer.rect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
@@ -270,18 +289,15 @@ public class MainMenuScreen extends BaseScreen {
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         backgroundViewport.update(width, height, true);
+        minimapViewport.update(width, height, true);
+        minimapViewport.setScreenBounds(width - 200 - 20, height - 200 - 20, 200, 200);
 
-        if (minimap)
-            updateMinimapViewport(width, height);
-
-        setSkeletonScale(skeletons.get(AnimationType.MENU.ordinal()), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE, viewport);
-        setSkeletonPosition(skeletons.get(AnimationType.MENU.ordinal()), viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
+        // updateSkeletons(viewport);
     }
 
-    public void updateMinimapViewport(int width, int height) {
-        minimapViewport.update(width, height, true);
-        // 0,0 in bottom left corner
-        minimapViewport.setScreenBounds(width - 200, height - 200, 200, 200);
+    private void updateSkeletonScaleAndPosition(Viewport viewport, int skeletonIndex) {
+        setSkeletonScale(skeletons.get(skeletonIndex), Constants.MainMenuScreen.SKEL_WIDTH_PERCENTAGE, Constants.MainMenuScreen.SKEL_HEIGHT_PERCENTAGE, viewport);
+        setSkeletonPosition(skeletons.get(skeletonIndex), viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2);
     }
 
     @Override
@@ -290,6 +306,9 @@ public class MainMenuScreen extends BaseScreen {
         minimapStage.dispose();
         if (batch != null) {
             batch.dispose();
+        }
+        if (shapeRenderer != null) {
+            shapeRenderer.dispose();
         }
     }
 }

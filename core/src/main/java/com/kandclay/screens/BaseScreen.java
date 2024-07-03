@@ -2,16 +2,13 @@ package com.kandclay.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.esotericsoftware.spine.*;
 import com.esotericsoftware.spine.attachments.RegionAttachment;
@@ -20,7 +17,6 @@ import com.kandclay.managers.AudioManager;
 import com.kandclay.managers.ConfigurationManager;
 import com.kandclay.managers.MyAssetManager;
 import com.kandclay.managers.ScreenManager;
-import com.kandclay.utils.Constants;
 import com.kandclay.utils.TrailDot;
 
 import java.util.HashMap;
@@ -34,7 +30,7 @@ public abstract class BaseScreen implements Screen {
     protected ScreenManager screenManager;
     protected ShapeRenderer shapeRenderer;
 
-    protected SkeletonRenderer renderer;
+    protected SkeletonRenderer skeletonRenderer;
     protected Array<AnimationState> states;
     protected Array<Skeleton> skeletons;
     protected HashMap<String, Boolean> hoverStates;
@@ -176,7 +172,6 @@ public abstract class BaseScreen implements Screen {
     protected void setSkeletonPosition(Skeleton skeleton, float x, float y) {
         if (skeleton != null) {
             skeleton.setPosition(x, y);
-//            Gdx.app.log("BaseScreen", skeleton.getData().getName() + " skeleton position set to x=" + x + " y=" + y);
         }
     }
 }

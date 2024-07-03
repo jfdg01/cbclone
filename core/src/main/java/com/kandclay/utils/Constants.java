@@ -3,8 +3,8 @@ package com.kandclay.utils;
 public class Constants {
 
     public static class General {
-        public static final int WIDTH = 1080;
-        public static final int HEIGHT = 1080;
+        public static final int EMBED_WIDTH = 1080;
+        public static final int EMBED_HEIGHT = 1080;
         public static final String TITLE = "K and Clay";
     }
 
@@ -49,7 +49,7 @@ public class Constants {
         public static final String JSON = "spine/menu.json";
         public static final String BUTTON_PLAY_NAME = "play";
         public static final String BUTTON_QUIT_NAME = "quit";
-        public static final String BUTTON_SETTINGS_NAME = "settings";
+        public static final String BUTTON_STGS_NAME = "settings";
         public static final float SKEL_WIDTH_PERCENTAGE = 1.3f;
         public static final float SKEL_HEIGHT_PERCENTAGE = 1.3f;
     }
