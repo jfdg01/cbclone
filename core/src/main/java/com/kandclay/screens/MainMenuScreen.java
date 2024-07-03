@@ -13,7 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.*;
 import com.esotericsoftware.spine.*;
 import com.kandclay.handlers.SpineAnimationHandler;
-import com.kandclay.managers.MyAssetManager;
 import com.kandclay.managers.ScreenManager;
 import com.kandclay.utils.Constants;
 import com.kandclay.utils.ScreenType;
@@ -63,10 +62,7 @@ public class MainMenuScreen extends BaseScreen {
         skeletonRenderer = new SkeletonRenderer();
         skeletonRenderer.setPremultipliedAlpha(true);
         shapeRenderer = new ShapeRenderer();
-        initializeHoverStates();
-    }
 
-    private void initializeHoverStates() {
         hoverStates = new HashMap<String, Boolean>();
         hoverStates.put(Constants.MainMenuScreen.BUTTON_PLAY_NAME, false);
         hoverStates.put(Constants.MainMenuScreen.BUTTON_QUIT_NAME, false);
@@ -127,6 +123,27 @@ public class MainMenuScreen extends BaseScreen {
         };
     }
 
+    private void handleHover(float x, float y, int skeletonIndex) {
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, skeletonIndex, 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, skeletonIndex, 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
+        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_STGS_NAME, skeletonIndex, 3, "Buttons/SettingsHoverIn", "Buttons/SettingsHoverOut");
+    }
+
+    private void handleClick(float x, float y, int skeletonIndex) {
+        if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, skeletonIndex)) {
+            playButtonPressAnimation("Buttons/PlayPress", skeletonIndex);
+        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, skeletonIndex)) {
+            playButtonPressAnimation("Buttons/QuitPress", skeletonIndex);
+        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_STGS_NAME, skeletonIndex)) {
+            playButtonPressAnimation("Buttons/SettingsPress", skeletonIndex);
+        }
+    }
+
+    private void initializeAnimations() {
+        initializeMenuSkeleton(AnimationType.MENU_1.ordinal());
+        initializeMenuSkeleton(AnimationType.MENU_2.ordinal());
+    }
+
     private void initializeMenuSkeleton(int skeletonIndex) {
 
         String atlasPath = Constants.MainMenuScreen.ATLAS;
@@ -135,7 +152,6 @@ public class MainMenuScreen extends BaseScreen {
         skeletons.insert(skeletonIndex, spineAnimationHandler.createSkeleton(atlasPath, skeletonPath));
         states.insert(skeletonIndex, spineAnimationHandler.createAnimationState(skeletons.get(skeletonIndex)));
 
-        // updateSkeletons(viewport);
         states.get(skeletonIndex).setAnimation(0, "animation", false);
 
         states.get(skeletonIndex).addListener(new AnimationState.AnimationStateListener() {
@@ -216,28 +232,7 @@ public class MainMenuScreen extends BaseScreen {
         batch.end();
     }
 
-    private void initializeAnimations() {
-        initializeMenuSkeleton(AnimationType.MENU_1.ordinal());
-        initializeMenuSkeleton(AnimationType.MENU_2.ordinal());
-    }
-
-    private void handleHover(float x, float y, int skeletonIndex) {
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, skeletonIndex, 1, "Buttons/PlayHoverIn", "Buttons/PlayHoverOut");
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, skeletonIndex, 2, "Buttons/QuitHoverIn", "Buttons/QuitHoverOut");
-        updateHoverState(x, y, Constants.MainMenuScreen.BUTTON_STGS_NAME, skeletonIndex, 3, "Buttons/SettingsHoverIn", "Buttons/SettingsHoverOut");
-    }
-
-    private void handleClick(float x, float y, int skeletonIndex) {
-        if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_PLAY_NAME, skeletonIndex)) {
-            playButtonPressAnimation("Buttons/PlayPress", ScreenType.MAIN, skeletonIndex);
-        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_QUIT_NAME, skeletonIndex)) {
-            playButtonPressAnimation("Buttons/QuitPress", null, skeletonIndex);
-        } else if (isHoveringButton(x, y, Constants.MainMenuScreen.BUTTON_STGS_NAME, skeletonIndex)) {
-            playButtonPressAnimation("Buttons/SettingsPress", ScreenType.OPTIONS, skeletonIndex);
-        }
-    }
-
-    private void playButtonPressAnimation(final String animationName, final ScreenType screenType, int skeletonIndex) {
+    private void playButtonPressAnimation(final String animationName, int skeletonIndex) {
         Gdx.app.log("MainMenuScreen", "Playing button press animation: " + animationName);
         states.get(skeletonIndex).setAnimation(4, animationName, false).setListener(new AnimationState.AnimationStateListener() {
             @Override
@@ -259,17 +254,31 @@ public class MainMenuScreen extends BaseScreen {
             @Override
             public void complete(AnimationState.TrackEntry entry) {
                 Gdx.app.log("MainMenuScreen", "Animation complete: " + animationName);
-                if (screenType != null) {
+                if (animationName.equals("Buttons/PlayPress")) {
                     Gdx.app.postRunnable(new Runnable() {
                         @Override
                         public void run() {
-                            Gdx.app.log("MainMenuScreen", "Changing screen to: " + screenType);
-                            screenManager.setScreen(screenType);
+                            Gdx.app.log("MainMenuScreen", "Changing screen to: MainMenuScreen");
+                            screenManager.setScreen(ScreenType.MAIN);
                         }
                     });
-                } else {
-                    Gdx.app.exit();
+                } else if (animationName.equals("Buttons/SettingsPress")) {
+                    Gdx.app.postRunnable(new Runnable() {
+                        @Override
+                        public void run() {
+                            Gdx.app.log("MainMenuScreen", "Changing screen to: OptionsScreen");
+                            screenManager.setScreen(ScreenType.STGS);
+                        }
+                    });
+                } else if (animationName.equals("Buttons/QuitPress")) {
+                    Gdx.app.postRunnable(new Runnable() {
+                        @Override
+                        public void run() {
+                            Gdx.net.openURI("https://www.google.com");
+                        }
+                    });
                 }
+
             }
 
             @Override

@@ -72,7 +72,7 @@ public class MainAnimationScreen extends BaseScreen {
         backgroundTexture = new TextureRegion(texture);
         backgroundViewport = new ExtendViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT);
 
-        uiViewport = new FitViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT);
+        uiViewport = new ExtendViewport(Constants.General.EMBED_WIDTH, Constants.General.EMBED_HEIGHT);
 
         shapeRenderer = new ShapeRenderer();
 

@@ -32,7 +32,7 @@ public class ScreenManager {
             case MAIN:
                 currentScreen = new MainAnimationScreen(spineAnimationHandler, this);
                 break;
-            case OPTIONS:
+            case STGS:
                 currentScreen = new ConfigurationScreen(spineAnimationHandler, this);
                 break;
         }
