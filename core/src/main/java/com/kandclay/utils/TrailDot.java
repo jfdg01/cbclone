@@ -19,12 +19,12 @@ public class TrailDot {
     public AnimationState state;
     public SkeletonRenderer renderer;
     public static SpineAnimationHandler spineAnimationHandler;
-    private static SnapshotArray<TrailDot> trailDots = new SnapshotArray<TrailDot>();
+    private static final SnapshotArray<TrailDot> trailDots = new SnapshotArray<TrailDot>();
     private static int trailDotCount = 0;
     public float x, y;
     public Viewport viewport;
 
-    public TrailDot(Skeleton skeleton, AnimationState state, SkeletonRenderer renderer, float x, float y, Viewport viewport) {
+    private TrailDot(Skeleton skeleton, AnimationState state, SkeletonRenderer renderer, float x, float y, Viewport viewport) {
         this.skeleton = skeleton;
         this.state = state;
         this.renderer = renderer;

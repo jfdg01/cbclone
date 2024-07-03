@@ -73,6 +73,16 @@ public class MainMenuScreen extends BaseScreen {
         hoverStates.put(Constants.MainMenuScreen.BUTTON_QUIT_NAME, false);
         hoverStates.put(Constants.MainMenuScreen.BUTTON_SETTINGS_NAME, false);
 
+        setUpStage(stage, viewport);
+        setUpStage(minimapStage, minimapViewport);
+
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(minimapStage);
+        multiplexer.addProcessor(stage);
+        Gdx.input.setInputProcessor(multiplexer);
+    }
+
+    private void setUpStage(Stage stage, Viewport viewport) {
         stage.addListener(new InputListener() {
             @Override
             public boolean mouseMoved(InputEvent event, float x, float y) {
@@ -90,21 +100,13 @@ public class MainMenuScreen extends BaseScreen {
         });
 
         addTrailToStage(stage, viewport);
-
-        minimapStage = new Stage(minimapViewport);
-        if (minimap)
-            addTrailToStage(minimapStage, minimapViewport);
-
-        InputMultiplexer multiplexer = new InputMultiplexer();
-        multiplexer.addProcessor(stage);
-        Gdx.input.setInputProcessor(multiplexer);
     }
 
     private void setUpMinimap() {
         Texture texture = new Texture(Gdx.files.internal("vp/texture.png"));
         minimapRegion = new TextureRegion(texture);
-
         minimapViewport = new FitViewport(minimapRegion.getRegionWidth(), minimapRegion.getRegionHeight());
+        minimapStage = new Stage(minimapViewport);
     }
 
     private void initializeAnimations() {
@@ -233,17 +235,20 @@ public class MainMenuScreen extends BaseScreen {
         TrailDot.renderTrail(delta, batch, viewport);
 
         if (minimap) {
-            renderMinimap();
+            renderMinimap(delta);
             TrailDot.renderTrail(delta, batch, minimapViewport);
         }
     }
 
-    private void renderMinimap() {
+    private void renderMinimap(float delta) {
         minimapViewport.apply();
         batch.setProjectionMatrix(minimapViewport.getCamera().combined);
         batch.begin();
         batch.draw(minimapRegion, 0, 0);
         batch.end();
+
+        minimapStage.act(delta);
+        minimapStage.draw();
     }
 
     private void renderDebug() {
@@ -276,12 +281,13 @@ public class MainMenuScreen extends BaseScreen {
     public void updateMinimapViewport(int width, int height) {
         minimapViewport.update(width, height, true);
         // 0,0 in bottom left corner
-        minimapViewport.setScreenBounds(width - 200 - 20, height - 200 - 20, 200, 200);
+        minimapViewport.setScreenBounds(width - 200, height - 200, 200, 200);
     }
 
     @Override
     public void dispose() {
         stage.dispose();
+        minimapStage.dispose();
         if (batch != null) {
             batch.dispose();
         }
